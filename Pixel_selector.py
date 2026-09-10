@@ -33,13 +33,13 @@ class Pixel_selector:
         self.zoom_factor = 1
         self.zoom_step = 1.1
         self.container = tk.Frame(root, bg=PANEL)
-        self.container.pack(fill="x")
+        self.container.pack(fill="both", expand=True)
         tk.Label(
             self.container,
             text="Pixel intensity extraction",
             bg=PANEL,
             fg=ACCENT,
-        ).pack(padx=20, pady=40, anchor="w")
+        ).pack(padx=20, pady=20, anchor="w")
 
         self.build_tab_1()
 
@@ -47,7 +47,7 @@ class Pixel_selector:
         btn_frame_1 = tk.Frame(self.container, bg=BG)
         btn_frame_1.pack(side="right", fill="x", padx=5, pady=10)
         main_1 = tk.Frame(self.container, bg=BG)
-        main_1.pack(fill="both", expand=True, padx=10, pady=10)
+        main_1.pack(fill="both", padx=10, pady=10, expand=True)
         self.h_scroll = tk.Scrollbar(main_1, orient="horizontal")
         self.v_scroll = tk.Scrollbar(main_1, orient="vertical")
         self.canvas_1 = tk.Canvas(
@@ -71,11 +71,11 @@ class Pixel_selector:
             bg=ACCENT,
             fg="black",
             relief="flat",
-            padx=40,
+            padx=20,
             pady=5,
             command=self.load_image_Gamma_JPG,
         )
-        self.btn_1.pack(side="bottom", pady=10, padx=40, fill="x")
+        self.btn_1.pack(side="bottom", pady=10, padx=10, fill="x")
 
         self.btn_2 = tk.Button(
             btn_frame_1,
@@ -83,11 +83,11 @@ class Pixel_selector:
             bg=ACCENT,
             fg="black",
             relief="flat",
-            padx=40,
+            padx=20,
             pady=5,
             command=self.extract_data,
         )
-        self.btn_2.pack(side="bottom", pady=10, padx=40, fill="x")
+        self.btn_2.pack(side="bottom", pady=10, padx=10, fill="x")
 
         self.btn_3 = tk.Button(
             btn_frame_1,
@@ -95,30 +95,30 @@ class Pixel_selector:
             bg=ACCENT,
             fg="black",
             relief="flat",
-            padx=40,
+            padx=20,
             pady=5,
             command=self.reset_counter,
         )
-        self.btn_3.pack(side="bottom", pady=10, padx=40, fill="x")
+        self.btn_3.pack(side="bottom", pady=10, padx=10, fill="x")
 
         self.btn_zoom_in = tk.Button(btn_frame_1, text="+", command=self.zoom_in)
-        self.btn_zoom_in.pack(side="bottom", pady=10, padx=40, fill="x")
+        self.btn_zoom_in.pack(side="bottom", pady=10, padx=10, fill="x")
         self.btn_zoom_out = tk.Button(btn_frame_1, text="-", command=self.zoom_out)
-        self.btn_zoom_out.pack(side="bottom", pady=10, padx=40, fill="x")
+        self.btn_zoom_out.pack(side="bottom", pady=10, padx=10, fill="x")
 
         # Events
         self.canvas_1.bind("<ButtonPress-1>", self.on_click)
 
         self.pixel_label_1 = tk.Label(btn_frame_1, text="pixel ---", bg=BG, fg="white")
-        self.pixel_label_1.pack(side="bottom", padx=20)
+        self.pixel_label_1.pack(side="bottom", padx=10)
 
         self.grey_patch_1 = tk.Label(
             btn_frame_1, text="Grey_patch ---", bg=BG, fg="white"
         )
-        self.grey_patch_1.pack(side="bottom", padx=20)
+        self.grey_patch_1.pack(side="bottom", padx=10)
 
         self.id_1 = tk.Label(btn_frame_1, text="ID ---", bg=BG, fg="white")
-        self.id_1.pack(side="bottom", padx=20)
+        self.id_1.pack(side="bottom", padx=10)
 
         tk.Label(
             btn_frame_1,
@@ -177,8 +177,11 @@ class Pixel_selector:
 
     def load_image_lineal_JPG(self):
         lineal_path = (
-            self.image_path.parent / Path() / Path(self.image_path.stem + ".TIFF")
+            self.image_path.parent.parent
+            / Path("linear")
+            / Path(self.image_path.stem + ".jpg")
         )
+        print(f"lineal_path: {lineal_path}")
         self.lineal_path = Path(lineal_path)
         lineal_img = cv2.imread(lineal_path)
         lineal_img = cv2.cvtColor(lineal_img, cv2.COLOR_BGR2RGB)
@@ -241,8 +244,8 @@ class Pixel_selector:
         Real_y = int(relative_y_position / self.display_scale)
 
         for _ in range(20):
-            dx = np.random.randint(-3, 4)  # Increase diameter
-            dy = np.random.randint(-3, 4)
+            dx = np.random.randint(-20, 20)
+            dy = np.random.randint(-20, 20)
             nx = Real_x + dx
             ny = Real_y + dy
             self.coords.append((nx, ny))
@@ -349,7 +352,7 @@ class Pixel_selector:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.geometry("1400x700")
+    root.geometry("1200x900")
     app = Pixel_selector(root)
     root.mainloop()
 
