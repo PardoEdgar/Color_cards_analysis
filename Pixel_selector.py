@@ -39,13 +39,13 @@ class Pixel_selector:
             text="Pixel intensity extraction",
             bg=PANEL,
             fg=ACCENT,
-        ).pack(padx=20, pady=20, anchor="w")
+        ).pack(padx=20, pady=40, anchor="w")
 
         self.build_tab_1()
 
     def build_tab_1(self):
         btn_frame_1 = tk.Frame(self.container, bg=BG)
-        btn_frame_1.pack(side="bottom", fill="x", padx=5, pady=10)
+        btn_frame_1.pack(side="right", fill="x", padx=5, pady=10)
         main_1 = tk.Frame(self.container, bg=BG)
         main_1.pack(fill="both", expand=True, padx=10, pady=10)
         self.h_scroll = tk.Scrollbar(main_1, orient="horizontal")
@@ -75,7 +75,7 @@ class Pixel_selector:
             pady=5,
             command=self.load_image_Gamma_JPG,
         )
-        self.btn_1.pack(side="left", pady=10, padx=40, fill="x")
+        self.btn_1.pack(side="bottom", pady=10, padx=40, fill="x")
 
         self.btn_2 = tk.Button(
             btn_frame_1,
@@ -87,32 +87,45 @@ class Pixel_selector:
             pady=5,
             command=self.extract_data,
         )
-        self.btn_2.pack(side="left", pady=10, padx=40, fill="x")
+        self.btn_2.pack(side="bottom", pady=10, padx=40, fill="x")
+
+        self.btn_3 = tk.Button(
+            btn_frame_1,
+            text="Reset counter",
+            bg=ACCENT,
+            fg="black",
+            relief="flat",
+            padx=40,
+            pady=5,
+            command=self.reset_counter,
+        )
+        self.btn_3.pack(side="bottom", pady=10, padx=40, fill="x")
+
         self.btn_zoom_in = tk.Button(btn_frame_1, text="+", command=self.zoom_in)
-        self.btn_zoom_in.pack(side="left", pady=10, padx=40, fill="x")
+        self.btn_zoom_in.pack(side="bottom", pady=10, padx=40, fill="x")
         self.btn_zoom_out = tk.Button(btn_frame_1, text="-", command=self.zoom_out)
-        self.btn_zoom_out.pack(side="left", pady=10, padx=40, fill="x")
+        self.btn_zoom_out.pack(side="bottom", pady=10, padx=40, fill="x")
 
         # Events
         self.canvas_1.bind("<ButtonPress-1>", self.on_click)
 
         self.pixel_label_1 = tk.Label(btn_frame_1, text="pixel ---", bg=BG, fg="white")
-        self.pixel_label_1.pack(side="right", padx=20)
+        self.pixel_label_1.pack(side="bottom", padx=20)
 
         self.grey_patch_1 = tk.Label(
             btn_frame_1, text="Grey_patch ---", bg=BG, fg="white"
         )
-        self.grey_patch_1.pack(side="right", padx=20)
+        self.grey_patch_1.pack(side="bottom", padx=20)
 
         self.id_1 = tk.Label(btn_frame_1, text="ID ---", bg=BG, fg="white")
-        self.id_1.pack(side="right", padx=20)
+        self.id_1.pack(side="bottom", padx=20)
 
         tk.Label(
             btn_frame_1,
             text="Site",
             bg=PANEL,
             fg=ACCENT,
-        ).pack(anchor="c", pady=(10, 10))
+        ).pack(side="right", anchor="c", pady=(10, 10))
 
         ttk.Combobox(
             btn_frame_1,
@@ -120,14 +133,14 @@ class Pixel_selector:
             values=["Lab", "Archaeology", "SetUp", "Parking", "Amador", "Aquarium"],
             state="readonly",
             width=12,
-        ).pack()
+        ).pack(side="right")
 
         tk.Label(
             btn_frame_1,
             text="Status",
             bg=PANEL,
             fg=ACCENT,
-        ).pack(anchor="c", pady=(10, 10))
+        ).pack(side="right", anchor="c", pady=(10, 10))
 
         ttk.Combobox(
             btn_frame_1,
@@ -135,14 +148,14 @@ class Pixel_selector:
             values=["Degraded", "Preserved"],
             state="readonly",
             width=12,
-        ).pack()
+        ).pack(side="right")
 
         tk.Label(
             btn_frame_1,
             text="Case",
             bg=PANEL,
             fg=ACCENT,
-        ).pack(anchor="c", pady=(10, 10))
+        ).pack(side="right", anchor="c", pady=(10, 10))
 
         ttk.Combobox(
             btn_frame_1,
@@ -150,7 +163,7 @@ class Pixel_selector:
             values=["Cased", "Uncased"],
             state="readonly",
             width=12,
-        ).pack()
+        ).pack(side="right")
 
     def load_image_Gamma_JPG(self):
         path = filedialog.askopenfilename()
@@ -163,7 +176,9 @@ class Pixel_selector:
         self.path = path
 
     def load_image_lineal_JPG(self):
-        lineal_path = filedialog.askopenfilename()  # To correct
+        lineal_path = (
+            self.image_path.parent / Path() / Path(self.image_path.stem + ".TIFF")
+        )
         self.lineal_path = Path(lineal_path)
         lineal_img = cv2.imread(lineal_path)
         lineal_img = cv2.cvtColor(lineal_img, cv2.COLOR_BGR2RGB)
@@ -226,7 +241,7 @@ class Pixel_selector:
         Real_y = int(relative_y_position / self.display_scale)
 
         for _ in range(20):
-            dx = np.random.randint(-3, 4)
+            dx = np.random.randint(-3, 4)  # Increase diameter
             dy = np.random.randint(-3, 4)
             nx = Real_x + dx
             ny = Real_y + dy
@@ -247,6 +262,11 @@ class Pixel_selector:
         self.draw_pixels()
 
         self.id_1.config(text=f"Id {self.id}")
+
+    def reset_counter(self):
+        self.region_number = 0
+        self.click_count = 0
+        self.id = 1
 
     def extract_data(self, output_path=r"C:\Users\jandr\Downloads"):
         records = []
@@ -329,6 +349,7 @@ class Pixel_selector:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.geometry("1300x700")
+    root.geometry("1400x700")
     app = Pixel_selector(root)
     root.mainloop()
+
