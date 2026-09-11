@@ -105,20 +105,17 @@ def process_folder_parallel(input_dir: Path, max_workers: int | None = None):
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {
             executor.submit(
-                demosaicking,
-                raw_path,
-                output_dir_tiff,
-                output_dir_jpg,
+                demosaicking, raw_path, output_dir_jpg, output_dir_tiff
             ): raw_path
             for raw_path in dng_files
         }
+
         for future in as_completed(futures):
             status, metadata = future.result()
             print(f"  {metadata['file_name']} → {status}")
             all_metadata.append(metadata)
 
     print(f"fdd demosaicked Tiffs in: {output_dir_jpg}")
-
     return
 
 
