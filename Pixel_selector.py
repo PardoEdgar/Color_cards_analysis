@@ -172,15 +172,17 @@ class Pixel_selector:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         self.image = img
         self.display_image(img)
-        self.load_image_lineal_JPG()
+        self.load_image_lineal_TIFF()
         self.path = path
+        print(self.image_path)
 
-    def load_image_lineal_JPG(self):
+    def load_image_lineal_TIFF(self):
         lineal_path = (
             self.image_path.parent.parent
             / Path("linear")
-            / Path(self.image_path.stem + ".jpg")
+            / Path(self.image_path.stem + ".TIFF")
         )
+
         print(f"lineal_path: {lineal_path}")
         self.lineal_path = Path(lineal_path)
         lineal_img = cv2.imread(lineal_path)
@@ -223,10 +225,10 @@ class Pixel_selector:
 
     def on_click(self, event):
         self.coords = []
-        grey_patches = ["G0", "G1", "G2", "G3", "G4", "G5", "G6"]
+        grey_patches = ["G0", "G1", "G2", "G3", "G4", "G5"]
         self.grey_patch = grey_patches[self.region_number % len(grey_patches)]
         self.region_number += 1
-        if self.click_count == 7:
+        if self.click_count == 6:
             self.id += 1
             self.click_count = 0
         self.click_count += 1
@@ -243,9 +245,9 @@ class Pixel_selector:
         Real_x = int(relative_x_position / self.display_scale)
         Real_y = int(relative_y_position / self.display_scale)
 
-        for _ in range(20):
-            dx = np.random.randint(-20, 20)
-            dy = np.random.randint(-20, 20)
+        for _ in range(25):
+            dx = np.random.randint(-25, 25)
+            dy = np.random.randint(-25, 25)
             nx = Real_x + dx
             ny = Real_y + dy
             self.coords.append((nx, ny))
@@ -265,6 +267,7 @@ class Pixel_selector:
         self.draw_pixels()
 
         self.id_1.config(text=f"Id {self.id}")
+        self.extract_data()
 
     def reset_counter(self):
         self.region_number = 0
@@ -288,8 +291,8 @@ class Pixel_selector:
 
             records.append(
                 {
-                    "folder": self.image_path.parent.stem,
-                    "Filename": self.image_path.stem,
+                    "folder": self.lineal_path.parent.stem,
+                    "Filename": self.lineal_path.stem,
                     "ID": self.id,
                     "Case": self.case.get(),
                     "Status": self.status.get(),
