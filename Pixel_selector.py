@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-PANEL = "#1D3742"
-BG = "#181B1F"
+PANEL = "#02236f"
+BG = "#000000"
 TEXT = "#FFFFFF"
 ACCENT = "#FFFFFF"
 
@@ -358,4 +358,3 @@ if __name__ == "__main__":
     root.geometry("1200x900")
     app = Pixel_selector(root)
     root.mainloop()
-
