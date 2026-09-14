@@ -34,6 +34,19 @@ def copy_datetime_metadata(dng_path, jpg_path):
         str(jpg_path),
     ]
 
+
+def copy_datetime_metadata_tiff(dng_path, tiff_path):
+    cmd = [
+        EXIFTOOL_PATH,
+        "-overwrite_original",
+        "-TagsFromFile",
+        str(dng_path),
+        "-all:all",
+        "-unsafe",
+        "-F",
+        str(tiff_path),
+    ]
+
     subprocess.run(cmd, check=True)
 
 
@@ -41,7 +54,6 @@ def demosaicking(file, output_dir_jpg, output_dir_tiff):
     img_raw = rawpy.imread(str(file))
     img = img_raw.postprocess(
         output_bps=16,
-        # no_auto_bright=False,
         # auto_bright_thr=10,
         four_color_rgb=True,  # Establece independencia entre los canales G del RGGB
         demosaic_algorithm=rawpy.DemosaicAlgorithm.AHD,
@@ -49,7 +61,8 @@ def demosaicking(file, output_dir_jpg, output_dir_tiff):
         fbdd_noise_reduction=rawpy.FBDDNoiseReductionMode.Off,
         highlight_mode=rawpy.HighlightMode.Clip,  # El maximo de los factores de WB (Comparando R,G,B) es igual al minimo
         no_auto_scale=False,  # Control para ejecutar funcion scale_colors() que contiene correccion nivel negro, use_auto_wb, user_wv   use_camera_wb. Sin esta, no se realiza nigun Wb_correction y queda con valores lineales de sensor
-        # use_camera_wb=True, #Usa el balance de blancos que la camara guarda en RAW
+        no_auto_bright=True,
+        use_camera_wb=False,  # Usa el balance de blancos que la camara guarda en RAW
         use_auto_wb=True,
         # Calculo de multiplicadores de white balanceing con rawpy. Utiliza el greybox (Region donde hay colores neutros) y analiza imagen por bloques de 8x8 ,
         # suma colores dentro del bloque por cada canal y descarta bloques saturados, resta nivel de negro, y valores negativos quedan en 0 y calcula promedio por cada canal.
@@ -61,6 +74,9 @@ def demosaicking(file, output_dir_jpg, output_dir_tiff):
         # user_sat=(2**16 - 1),
     )
 
+    tiff_path = output_dir_tiff / (f"{file.stem}.TIFF")
+    tifffile.imwrite(str(tiff_path), img)
+
     low_val = np.percentile(img, 2)
     high_val = np.percentile(img, 98)
     img = np.clip(img, low_val, high_val)
@@ -68,14 +84,13 @@ def demosaicking(file, output_dir_jpg, output_dir_tiff):
 
     img_gamma = np.power(img, 1.0 / 2.2)
     img_gamma = np.clip(img_gamma, 0, 1)
-    tiff_path = output_dir_tiff / (f"{file.stem}.TIFF")
-    tifffile.imwrite(str(tiff_path), (img * 65535).astype(np.uint16))
 
     jpg_path = output_dir_jpg / (f"{file.stem}.jpg")
     Image.fromarray((img_gamma * 255).astype(np.uint8), mode="RGB").save(
         jpg_path, format="JPEG", quality=95
     )
     copy_datetime_metadata(file, jpg_path)
+    copy_datetime_metadata_tiff(file, tiff_path)
     img_raw.close()
 
     return "ok", {"file_name": file.name}
