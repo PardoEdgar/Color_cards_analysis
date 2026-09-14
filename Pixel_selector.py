@@ -185,12 +185,14 @@ class Pixel_selector:
 
         print(f"lineal_path: {lineal_path}")
         self.lineal_path = Path(lineal_path)
-        lineal_img = cv2.imread(lineal_path)
+        lineal_img = cv2.imread(str(lineal_path), cv2.IMREAD_UNCHANGED)
         lineal_img = cv2.cvtColor(lineal_img, cv2.COLOR_BGR2RGB)
+        print(lineal_img.dtype)
         self.lineal_image = lineal_img
         self.arr = np.array(lineal_img)
-        self.hsv_arr = cv2.cvtColor(lineal_img, cv2.COLOR_RGB2HSV)
-        self.lab_arr = cv2.cvtColor(lineal_img, cv2.COLOR_RGB2LAB)
+        lineal_float = lineal_img.astype(np.float32) / 65535
+        self.hsv_arr = cv2.cvtColor(lineal_float, cv2.COLOR_RGB2HSV)
+        self.lab_arr = cv2.cvtColor(lineal_float, cv2.COLOR_RGB2LAB)
 
     def display_image(self, img):
         self.canvas_1.update_idletasks()
@@ -254,15 +256,7 @@ class Pixel_selector:
         r = self.arr[Real_y, Real_x, 0]
         g = self.arr[Real_y, Real_x, 1]
         b = self.arr[Real_y, Real_x, 2]
-        h = self.hsv_arr[Real_y, Real_x, 0]
-        s = self.hsv_arr[Real_y, Real_x, 1]
-        v = self.hsv_arr[Real_y, Real_x, 2]
-        l_lab = self.lab_arr[Real_y, Real_x, 0]
-        a_lab = self.lab_arr[Real_y, Real_x, 1]
-        b_lab = self.lab_arr[Real_y, Real_x, 2]
-        self.pixel_label_1.config(
-            text=f"Pixel ({Real_x}, {Real_y}); R={r},G={g},B={b}; h={h},s={s},v={v}; l={l_lab},a={a_lab},b={b_lab}"
-        )
+        self.pixel_label_1.config(text=f"Pixel ({Real_x}, {Real_y}); R={r},G={g},B={b}")
         self.grey_patch_1.config(text=f"Grey patch {self.grey_patch}")
         self.draw_pixels()
 
