@@ -1,11 +1,8 @@
 library(tidyverse)
-library(Dharma)
 library(glmmTMB)
 library(DHARMa)
 
-data <- read_csv("C:/Users/jandr/Downloads/Data_pixels.csv")
-data$R_norm <- data$R / 65535
-
+data <- read_csv("C:/Users/jandr/Downloads/Data_pixels_linear_tiff.csv")
 data_G0 <- data |> dplyr::filter(Grey_patch == "G0")
 
 data_G0 <- data_G0 |>
@@ -13,11 +10,13 @@ data_G0 <- data_G0 |>
   mutate(Site = factor(Site)) |>
   mutate(ID = factor(ID)) |>
   mutate(Case = factor(Case))
-
 Mlm <- glmmTMB(log(R) ~ Site + (1 | ID), data = data_G0, family = gaussian())
 summary(Mlm)
 M1m_res <- simulateResiduals(Mlm, n = 2000)
 plot(M1m_res)
+
+summary(data_G0)
+colSums(is.na(data_G0))
 
 
 data_G1 <- data |> dplyr::filter(Grey_patch == "G1")
@@ -205,7 +204,7 @@ ggplot(data, aes(x = interaction(Case, Status), y = R_log, fill = Grey_patch)) +
   geom_boxplot(alpha = 2) +
   geom_jitter(color = "grey", size = 0.5, alpha = 0.2) +
   scale_fill_manual(values = color) +
-  facet_grid(cols = vars(Grey_patch), rows = vars(Site)) +
+  facet_grid(cols = vars(Site), rows = vars(Grey_patch)) +
   geom_errorbar(
     data = stat_summary,
     aes(x = interaction(Case, Status), ymax = SD_max, ymin = SD_min),
@@ -228,6 +227,5 @@ ggplot(data, aes(x = interaction(Case, Status), y = R_log, fill = Grey_patch)) +
   theme_classic() +
   theme(
     legend.position = "top",
-    legend.spacing = ,
     axis.text.x = element_text(angle = 45, vjust = 0.5)
   )
