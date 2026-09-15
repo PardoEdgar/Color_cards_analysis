@@ -1,2 +1,5 @@
-# Color_cards_analysis
-Author: E. Alejandro Pardo Sarmiento & Mariana Fernandez 
+# Color cards qnalysis
+
+## Authors: E. Alejandro Pardo Sarmiento, Mariana Fernandez, Migdonio Gónzalez & Sean R. Connolly
+
+
