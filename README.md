@@ -1,6 +1,6 @@
 # Color cards qnalysis
 
 ## Authors
-E. Alejandro Pardo Sarmiento, Mariana Fernandez, Migdonio Gónzalez & Sean R. Connolly
+E. Alejandro Pardo Sarmiento, Mariana Fernandez, Migdonio González & Sean R. Connolly
 
 
