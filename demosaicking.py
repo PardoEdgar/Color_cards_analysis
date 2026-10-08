@@ -14,6 +14,7 @@ EXIFTOOL_PATH = (
     r"C:\Users\jandr\Downloads\exiftool-13.59_64\exiftool-13.59_64\exiftool.exe"
 )
 
+
 def load_data():
     root = tk.Tk()
     root.withdraw()
