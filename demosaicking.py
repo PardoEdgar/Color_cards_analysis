@@ -56,24 +56,16 @@ def demosaicking_linear(file, output_dir_tiff):
     Max_saturation = img_raw.white_level - img_raw.black_level_per_channel[0]
     img = img_raw.postprocess(
         output_bps=16,
-        # auto_bright_thr=10,
-        four_color_rgb=True,  # Establece independencia entre los canales G del RGGB
+        four_color_rgb=True, 
         demosaic_algorithm=rawpy.DemosaicAlgorithm.AHD,
         output_color=rawpy.ColorSpace.raw,
         fbdd_noise_reduction=rawpy.FBDDNoiseReductionMode.Off,
-        highlight_mode=rawpy.HighlightMode.Ignore,  # El maximo de los factores de WB (Comparando R,G,B) es igual al minimo
-        no_auto_scale=True,  # Control para ejecutar funcion scale_colors() que contiene correccion nivel negro, use_auto_wb, user_wv   use_camera_wb. Sin esta, no se realiza nigun Wb_correction y queda con valores lineales de sensor
-        no_auto_bright=True,
-        use_camera_wb=False,  # Usa el balance de blancos que la camara guarda en RAW
+        highlight_mode=rawpy.HighlightMode.Ignore, 
+        no_auto_scale=True, no_auto_bright=True,
+        use_camera_wb=False,  
         use_auto_wb=False,
-        # Calculo de multiplicadores de white balancing con rawpy. Utiliza el greybox (Region donde hay colores neutros) y analiza imagen por bloques de 8x8 ,
-        # suma colores dentro del bloque por cada canal y descarta bloques saturados, resta nivel de negro, y valores negativos quedan en 0 y calcula promedio por cada canal.
-        # Los factores de WB serian el inverso del promedio (1/promedio) y realiza un clipping value despues de multiplicar los pixels por los WB factors normalizados (WBfacor por canal / max wbfactor)
-        # user_black=1,
-        # bright = 1,
         gamma=(1, 1),
         user_flip=0,
-        # user_sat=(2**16 - 1),
     )
     linear = img.astype(np.float32) / Max_saturation
 
@@ -117,24 +109,16 @@ def demosaicking_gamma(file, output_dir_jpg):
     img_raw = rawpy.imread(str(file))
     img = img_raw.postprocess(
         output_bps=16,
-        # auto_bright_thr=10,
-        four_color_rgb=True,  # Establece independencia entre los canales G del RGGB
+        four_color_rgb=True,  
         demosaic_algorithm=rawpy.DemosaicAlgorithm.AHD,
         output_color=rawpy.ColorSpace.sRGB,
         fbdd_noise_reduction=rawpy.FBDDNoiseReductionMode.Off,
-        highlight_mode=rawpy.HighlightMode.Ignore,  # El maximo de los factores de WB (Comparando R,G,B) es igual al minimo
-        no_auto_scale=False,  # Control para ejecutar funcion scale_colors() que contiene correccion nivel negro, use_auto_wb, user_wv   use_camera_wb. Sin esta, no se realiza nigun Wb_correction y queda con valores lineales de sensor
+        highlight_mode=rawpy.HighlightMode.Ignore,  
+        no_auto_scale=False,  
         no_auto_bright=True,
-        use_camera_wb=False,  # Usa el balance de blancos que la camara guarda en RAW
+        use_camera_wb=False, 
         use_auto_wb=True,
-        # Calculo de multiplicadores de white balancing con rawpy. Utiliza el greybox (Region donde hay colores neutros) y analiza imagen por bloques de 8x8 ,
-        # suma colores dentro del bloque por cada canal y descarta bloques saturados, resta nivel de negro, y valores negativos quedan en 0 y calcula promedio por cada canal.
-        # Los factores de WB serian el inverso del promedio (1/promedio) y realiza un clipping value despues de multiplicar los pixels por los WB factors normalizados (WBfacor por canal / max wbfactor)
-        # user_wb=[1.0, 1.0, 1.0, 1.0],
-        # user_black=1,
-        # bright = 1,
         gamma=(1, 1),
-        # user_sat=(2**16 - 1),
     )
 
     low_val = np.percentile(img, 2)
@@ -156,23 +140,18 @@ def demosaicking_gamma(file, output_dir_jpg):
 
 
 def process_folder_parallel_gamma(input_dir, max_workers):
-
     output_dir_jpg = input_dir.parent / "gamma"
     output_dir_jpg.mkdir(parents=True, exist_ok=True)
-
     dng_files = list(input_dir.glob("*.dng"))
-
     if not dng_files:
         print("NO DNG files to process.")
         return
-
     print(f"Processing {len(dng_files)} files with {max_workers} units")
 
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {
             executor.submit(demosaicking_gamma, raw_path, output_dir_jpg): raw_path
-            for raw_path in dng_files
-        }
+            for raw_path in dng_files}
         for future in as_completed(futures):
             raw_path = futures[future]
             try:
@@ -180,7 +159,6 @@ def process_folder_parallel_gamma(input_dir, max_workers):
                 print(f"{raw_path.name}  processed and saved in {output_dir_jpg}")
             except Exception as e:
                 print(f"{raw_path.name}  ERROR: {e}")
-
 
 if __name__ == "__main__":
     folder = load_data()
