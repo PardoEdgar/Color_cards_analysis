@@ -53,6 +53,7 @@ def copy_datetime_metadata_tiff(dng_path, tiff_path):
 
 def demosaicking_linear(file, output_dir_tiff):
     img_raw = rawpy.imread(str(file))
+    Max_saturation = img_raw.white_level - img_raw.black_level_per_channel[0]
     img = img_raw.postprocess(
         output_bps=16,
         # auto_bright_thr=10,
@@ -68,16 +69,16 @@ def demosaicking_linear(file, output_dir_tiff):
         # Calculo de multiplicadores de white balancing con rawpy. Utiliza el greybox (Region donde hay colores neutros) y analiza imagen por bloques de 8x8 ,
         # suma colores dentro del bloque por cada canal y descarta bloques saturados, resta nivel de negro, y valores negativos quedan en 0 y calcula promedio por cada canal.
         # Los factores de WB serian el inverso del promedio (1/promedio) y realiza un clipping value despues de multiplicar los pixels por los WB factors normalizados (WBfacor por canal / max wbfactor)
-        # user_wb=[1.0, 1.0, 1.0, 1.0],
         # user_black=1,
         # bright = 1,
         gamma=(1, 1),
         user_flip=0,
         # user_sat=(2**16 - 1),
     )
+    linear = img.astype(np.float32) / Max_saturation
 
     tiff_path = output_dir_tiff / (f"{file.stem}.TIFF")
-    tifffile.imwrite(str(tiff_path), img)
+    tifffile.imwrite(str(tiff_path), linear, photometric="rgb")
     copy_datetime_metadata_tiff(file, tiff_path)
     img_raw.close()
 
