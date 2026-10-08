@@ -33,6 +33,7 @@ def copy_datetime_metadata(dng_path, jpg_path):
         "-F",
         str(jpg_path),
     ]
+    subprocess.run(cmd, check=True)
 
 
 def copy_datetime_metadata_tiff(dng_path, tiff_path):
@@ -57,7 +58,7 @@ def demosaicking_linear(file, output_dir_tiff):
         # auto_bright_thr=10,
         four_color_rgb=True,  # Establece independencia entre los canales G del RGGB
         demosaic_algorithm=rawpy.DemosaicAlgorithm.AHD,
-        output_color=rawpy.ColorSpace.sRGB,
+        output_color=rawpy.ColorSpace.raw,
         fbdd_noise_reduction=rawpy.FBDDNoiseReductionMode.Off,
         highlight_mode=rawpy.HighlightMode.Ignore,  # El maximo de los factores de WB (Comparando R,G,B) es igual al minimo
         no_auto_scale=True,  # Control para ejecutar funcion scale_colors() que contiene correccion nivel negro, use_auto_wb, user_wv   use_camera_wb. Sin esta, no se realiza nigun Wb_correction y queda con valores lineales de sensor
@@ -71,6 +72,7 @@ def demosaicking_linear(file, output_dir_tiff):
         # user_black=1,
         # bright = 1,
         gamma=(1, 1),
+        user_flip=0,
         # user_sat=(2**16 - 1),
     )
 
@@ -107,7 +109,7 @@ def process_folder_parallel_linear(input_dir, max_workers):
                 future.result()
                 print(f"{raw_path.name} processed and saved in {output_dir_tiff}")
             except Exception as e:
-                print(f"{raw_path} Error")
+                print(f"{raw_path} Error {e}")
 
 
 def demosaicking_gamma(file, output_dir_jpg):
@@ -170,13 +172,13 @@ def process_folder_parallel_gamma(input_dir, max_workers):
             executor.submit(demosaicking_gamma, raw_path, output_dir_jpg): raw_path
             for raw_path in dng_files
         }
-    for future in as_completed(futures):
-        raw_path = futures[future]
-        try:
-            future.result()
-            print(f"{raw_path.name}  processed and saved in {output_dir_jpg}")
-        except Exception as e:
-            print(f"{raw_path.name}  ERROR: {e}")
+        for future in as_completed(futures):
+            raw_path = futures[future]
+            try:
+                future.result()
+                print(f"{raw_path.name}  processed and saved in {output_dir_jpg}")
+            except Exception as e:
+                print(f"{raw_path.name}  ERROR: {e}")
 
 
 if __name__ == "__main__":
