@@ -1,7 +1,7 @@
 library(tidyverse)
 library(glmmTMB)
 library(DHARMa)
-
+library(readxl)
 data <- read_csv("C:/Users/jandr/Downloads/Data_pixels_linear_tiff.csv")
 data_G0 <- data |> dplyr::filter(Grey_patch == "G0")
 
@@ -228,4 +228,103 @@ ggplot(data, aes(x = interaction(Case, Status), y = R_log, fill = Grey_patch)) +
   theme(
     legend.position = "top",
     axis.text.x = element_text(angle = 45, vjust = 0.5)
+  )
+##############################
+path <- "C:/Users/jandr/Downloads/underwater_vs_lab_pixels_data.csv"
+data <- read_csv(path)
+data <- data |>
+  mutate(
+    Grey_patch = factor(Grey_patch),
+    Site = factor(Site),
+    Status = factor(Status),
+    ID = factor(ID)
+  ) |>
+  dplyr::filter(!Grey_patch %in% c("G0", "G5")) |>
+  mutate(Ratio_RG = log(R / G), Ratio_RB = log(R / B))
+
+data_long <- pivot_longer(
+  data,
+  cols = c(R, G, B, Ratio_RB, Ratio_RG),
+  names_to = "RGB",
+  values_to = "Intensity"
+)
+
+ggplot(data = data) +
+  geom_density(
+    aes(x = Ratio_RB, color = Site, fill = Site),
+    linewidth = 1,
+    alpha = 0.5
+  ) +
+  facet_grid(rows = vars(Grey_patch), cols = vars(Status)) +
+  theme_classic()
+
+data_underwater <- data |> dplyr::filter(Site == "Underwater")
+
+model <- glmmTMB(
+  Ratio_RG ~ Grey_patch + (1 | ID:Grey_patch),
+  data = data_underwater,
+  family = gaussian()
+)
+predict(model, se.fit = TRUE)
+
+
+summary(model)
+model_res <- simulateResiduals(model, n = 2000)
+plot(model_res)
+
+
+ranef_underwater <- ranef(model)$cond$`ID:Grey_patch` |>
+  rownames_to_column("ID:Grey_Patch") |>
+  separate(
+    col = "ID:Grey_Patch",
+    into = c("ID", "Grey_patch"),
+    sep = ":"
+  ) |>
+  rename(Random_effect = '(Intercept)') |>
+  mutate(Site = "Underwater")
+
+
+data_lab <- data |> dplyr::filter(Site == "Lab")
+
+model_lab <- glmmTMB(
+  Ratio_RG ~ Grey_patch + (1 | ID:Grey_patch),
+  data = data_lab,
+  family = gaussian()
+)
+
+
+summary(model_lab)
+model_lab_res <- simulateResiduals(model, n = 2000)
+plot(model_lab_res)
+
+ranef(model)
+
+ranef_lab <- ranef(model_lab)$cond$`ID:Grey_patch` |>
+  rownames_to_column("ID:Grey_Patch") |>
+  separate(
+    col = "ID:Grey_Patch",
+    into = c("ID", "Grey_patch"),
+    sep = ":"
+  ) |>
+  rename(Random_effect = '(Intercept)') |>
+  mutate(Site = "Lab")
+
+random_effects <- bind_rows(ranef_underwater, ranef_lab)
+
+ggplot(
+  data = random_effects,
+  aes(x = Grey_patch, y = Random_effect, color = ID, group = ID)
+) +
+  geom_point() +
+  geom_line() +
+  facet_grid(cols = vars(Site)) +
+  theme_classic()
+
+data_summary <- data |>
+  group_by(Site, ID, Grey_patch) |>
+  summarise(
+    SD = sd(Ratio_RG),
+    mean = mean(Ratio_RG),
+    cv = (SD / mean) * 100,
+    .groups = "drop"
   )
