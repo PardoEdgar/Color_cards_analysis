@@ -382,7 +382,6 @@ random_effects <- random_effects |>
   mutate(Status = str_split_i(ID, pattern = "_", 2))
 
 
-
 ranef_lab_base <- ranef(Model_base_underwater)$cond$`ID` |>
   rownames_to_column("ID") |>
   rename(Random_effect = '(Intercept)') |>
@@ -412,7 +411,7 @@ ggplot(
   ) +
   scale_colour_viridis_d() +
   geom_point() +
-  geom_line() +
+  geom_line(linewidth = 1.5) +
   facet_grid(cols = vars(Site, Status)) +
   geom_hline(
     data = ranef_model_based,
