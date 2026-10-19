@@ -2,7 +2,10 @@ library(tidyverse)
 library(glmmTMB)
 library(DHARMa)
 library(readxl)
-data <- read_csv("C:/Users/jandr/Downloads/Data_pixels_linear_tiff.csv")
+
+data <- read_csv(
+  "C:/Users/jandr/Downloads/Raw_underwater_vs_lab_pixels_data.csv"
+)
 data_G0 <- data |> dplyr::filter(Grey_patch == "G0")
 
 data_G0 <- data_G0 |>
@@ -229,8 +232,9 @@ ggplot(data, aes(x = interaction(Case, Status), y = R_log, fill = Grey_patch)) +
     legend.position = "top",
     axis.text.x = element_text(angle = 45, vjust = 0.5)
   )
-##############################
-path <- "C:/Users/jandr/Downloads/underwater_vs_lab_pixels_data.csv"
+
+#############################################################################################
+path <- "C:/Users/jandr/Downloads/Gray_world_whitebalanced_underwater_vs_air_Data_pixels.csv"
 data <- read_csv(path)
 data <- data |>
   mutate(
@@ -240,7 +244,8 @@ data <- data |>
     ID = factor(ID)
   ) |>
   dplyr::filter(!Grey_patch %in% c("G0", "G5")) |>
-  mutate(Ratio_RG = log(R / G), Ratio_RB = log(R / B))
+  mutate(Ratio_RG = (R / G), Ratio_RB = (R / B))
+
 
 data_long <- pivot_longer(
   data,
@@ -260,24 +265,39 @@ ggplot(data = data) +
 
 data_underwater <- data |> dplyr::filter(Site == "Underwater")
 
+Model_base <- glmmTMB(
+  log(R) ~ Grey_patch + (1 | ID:Status),
+  data = data_underwater,
+  family = gaussian()
+)
+
+summary(Model_base)
+Model_base_res <- simulateResiduals(Model_base, n = 3000)
+plot(Model_base_res)
+
+Data_Var <- data.frame(Mean = Prediction$fit, Variance = Prediction$se.fit) |>
+  mutate(Site = "Underwater")
+
+Data_prediction_underwater <- Data_Var[1, ]
+
 model <- glmmTMB(
-  Ratio_RG ~ Grey_patch + (1 | ID:Grey_patch),
+  log(R) ~ Grey_patch + (1 | ID:Grey_patch:Status),
   data = data_underwater,
   family = gaussian()
 )
 predict(model, se.fit = TRUE)
 
-
 summary(model)
 model_res <- simulateResiduals(model, n = 2000)
+
 plot(model_res)
 
 
-ranef_underwater <- ranef(model)$cond$`ID:Grey_patch` |>
-  rownames_to_column("ID:Grey_Patch") |>
+ranef_underwater <- ranef(model)$cond$`ID:Grey_patch:Status` |>
+  rownames_to_column("ID:Grey_Patch:Status") |>
   separate(
-    col = "ID:Grey_Patch",
-    into = c("ID", "Grey_patch"),
+    col = "ID:Grey_Patch:Status",
+    into = c("ID", "Grey_patch", "Status"),
     sep = ":"
   ) |>
   rename(Random_effect = '(Intercept)') |>
@@ -286,8 +306,29 @@ ranef_underwater <- ranef(model)$cond$`ID:Grey_patch` |>
 
 data_lab <- data |> dplyr::filter(Site == "Lab")
 
+
+Model_base_lab <- glmmTMB(
+  log(R) ~ Grey_patch + (1 | ID),
+  data = data_lab,
+  family = gaussian()
+)
+
+summary(Model_base_lab)
+Model_base_res_lab <- simulateResiduals(Model_base_lab, n = 3000)
+plot(Model_base_res_lab)
+prediction_lab <- predict(Model_base_lab, se.fit = TRUE)
+
+Data_prediction_lab <- data.frame(
+  Mean = prediction_lab$fit,
+  Variance = prediction_lab$se.fit
+) |>
+  mutate(Site = "Lab")
+
+Data_prediction_lab <- Data_prediction_lab[1, ]
+Data_prediction <- bind_rows(Data_prediction_lab, Data_prediction_underwater)
+
 model_lab <- glmmTMB(
-  Ratio_RG ~ Grey_patch + (1 | ID:Grey_patch),
+  log(R) ~ Grey_patch + (1 | ID:Grey_patch:Status),
   data = data_lab,
   family = gaussian()
 )
@@ -299,11 +340,11 @@ plot(model_lab_res)
 
 ranef(model)
 
-ranef_lab <- ranef(model_lab)$cond$`ID:Grey_patch` |>
-  rownames_to_column("ID:Grey_Patch") |>
+ranef_lab <- ranef(model_lab)$cond$`ID:Grey_patch:Status` |>
+  rownames_to_column("ID:Grey_Patch:Status") |>
   separate(
-    col = "ID:Grey_Patch",
-    into = c("ID", "Grey_patch"),
+    col = "ID:Grey_Patch:Status",
+    into = c("ID", "Grey_patch", "Status"),
     sep = ":"
   ) |>
   rename(Random_effect = '(Intercept)') |>
@@ -315,16 +356,13 @@ ggplot(
   data = random_effects,
   aes(x = Grey_patch, y = Random_effect, color = ID, group = ID)
 ) +
+  geom_hline(
+    data = Data_prediction,
+    aes(yintercept = Variance),
+    linetype = "dashed",
+    color = "red"
+  ) +
   geom_point() +
   geom_line() +
-  facet_grid(cols = vars(Site)) +
+  facet_grid(cols = vars(Site, Status)) +
   theme_classic()
-
-data_summary <- data |>
-  group_by(Site, ID, Grey_patch) |>
-  summarise(
-    SD = sd(Ratio_RG),
-    mean = mean(Ratio_RG),
-    cv = (SD / mean) * 100,
-    .groups = "drop"
-  )
