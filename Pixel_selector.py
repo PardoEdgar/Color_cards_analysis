@@ -130,7 +130,7 @@ class Pixel_selector:
         ttk.Combobox(
             btn_frame_1,
             textvariable=self.site,
-            values=["Lab", "Archaeology", "SetUp", "Parking", "Amador", "Aquarium"],
+            values=["Lab", "Archaeology", "SetUp", "Parking", "Amador", "Aquarium","Underwater"],
             state="readonly",
             width=12,
         ).pack(side="right")
