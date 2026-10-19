@@ -381,6 +381,25 @@ random_effects$Status <- split(random_effects$ID, , sep = "_")
 random_effects <- random_effects |>
   mutate(Status = str_split_i(ID, pattern = "_", 2))
 
+
+
+ranef_lab_base <- ranef(Model_base_underwater)$cond$`ID` |>
+  rownames_to_column("ID") |>
+  rename(Random_effect = '(Intercept)') |>
+  mutate(Site = "Lab") |>
+  mutate(Status = ifelse(grepl("_D$", ID), "D", "P"))
+
+
+ranef_underwater_based <- ranef(Model_base_underwater)$cond$`ID` |>
+  rownames_to_column("ID") |>
+  rename(Random_effect = '(Intercept)') |>
+  mutate(Site = "Underwater") |>
+  mutate(Status = ifelse(grepl("_D$", ID), "D", "P"))
+
+
+ranef_model_based <- bind_rows(ranef_lab_base, ranef_underwater_based)
+
+
 ggplot(
   data = random_effects,
   aes(x = Grey_patch, y = exp(Random_effect), color = ID, group = ID)
@@ -407,22 +426,3 @@ ggplot(
 
 AIC(Model_base_underwater, model_underwater)
 AIC(model_base_lab, model_lab)
-
-Data_prediction
-
-
-ranef_lab_base <- ranef(Model_base_underwater)$cond$`ID` |>
-  rownames_to_column("ID") |>
-  rename(Random_effect = '(Intercept)') |>
-  mutate(Site = "Lab") |>
-  mutate(Status = ifelse(grepl("_D$", ID), "D", "P"))
-
-
-ranef_underwater_based <- ranef(Model_base_underwater)$cond$`ID` |>
-  rownames_to_column("ID") |>
-  rename(Random_effect = '(Intercept)') |>
-  mutate(Site = "Underwater") |>
-  mutate(Status = ifelse(grepl("_D$", ID), "D", "P"))
-
-
-ranef_model_based <- bind_rows(ranef_lab_base, ranef_underwater_based)
