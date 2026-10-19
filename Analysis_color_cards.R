@@ -241,7 +241,11 @@ data <- data |>
     Grey_patch = factor(Grey_patch),
     Site = factor(Site),
     Status = factor(Status),
-    ID = factor(ID)
+    ID = factor(paste0(
+      data$ID,
+      "_",
+      ifelse(data$Status == "Preserved", "P", "D")
+    ))
   ) |>
   dplyr::filter(!Grey_patch %in% c("G0", "G5")) |>
   mutate(Ratio_RG = (R / G), Ratio_RB = (R / B))
@@ -266,7 +270,7 @@ ggplot(data = data) +
 data_underwater <- data |> dplyr::filter(Site == "Underwater")
 
 Model_base_underwater <- glmmTMB(
-  log(R) ~ Grey_patch + (1 | ID:Status),
+  log(R) ~ Grey_patch + (1 | ID),
   data = data_underwater,
   family = gaussian()
 )
@@ -281,7 +285,7 @@ Data_Var <- data.frame(Mean = Prediction$fit, Variance = Prediction$se.fit) |>
 Data_prediction_underwater <- Data_Var[1, ]
 
 model_underwater <- glmmTMB(
-  log(R) ~ Grey_patch + (1 | ID:Grey_patch:Status),
+  log(R) ~ Grey_patch + (1 | ID:Grey_patch),
   data = data_underwater,
   family = gaussian()
 )
@@ -293,11 +297,11 @@ model_underwater_res <- simulateResiduals(model_underwater, n = 2000)
 plot(model_underwater_res)
 
 
-ranef_underwater <- ranef(model_underwater)$cond$`ID:Grey_patch:Status` |>
-  rownames_to_column("ID:Grey_Patch:Status") |>
+ranef_underwater <- ranef(model_underwater)$cond$`ID:Grey_patch` |>
+  rownames_to_column("ID:Grey_Patch") |>
   separate(
-    col = "ID:Grey_Patch:Status",
-    into = c("ID", "Grey_patch", "Status"),
+    col = "ID:Grey_Patch",
+    into = c("ID", "Grey_patch"),
     sep = ":"
   ) |>
   rename(Random_effect = '(Intercept)') |>
@@ -328,7 +332,7 @@ Data_prediction_lab <- Data_prediction_lab[1, ]
 Data_prediction <- bind_rows(Data_prediction_lab, Data_prediction_underwater)
 
 model_lab <- glmmTMB(
-  log(R) ~ Grey_patch + (1 | ID:Grey_patch:Status),
+  log(R) ~ Grey_patch + (1 | ID:Grey_patch),
   data = data_lab,
   family = gaussian()
 )
@@ -337,28 +341,31 @@ summary(model_lab)
 model_lab_res <- simulateResiduals(model_underwater, n = 2000)
 plot(model_lab_res)
 
-ranef_lab <- ranef(model_lab)$cond$`ID:Grey_patch:Status` |>
-  rownames_to_column("ID:Grey_Patch:Status") |>
+ranef_lab <- ranef(model_lab)$cond$`ID:Grey_patch` |>
+  rownames_to_column("ID:Grey_Patch") |>
   separate(
-    col = "ID:Grey_Patch:Status",
-    into = c("ID", "Grey_patch", "Status"),
+    col = "ID:Grey_Patch",
+    into = c("ID", "Grey_patch"),
     sep = ":"
   ) |>
   rename(Random_effect = '(Intercept)') |>
   mutate(Site = "Lab")
 
 random_effects <- bind_rows(ranef_underwater, ranef_lab)
-
+random_effects$Status <- split(random_effects$ID, , sep = "_")
+random_effects <- random_effects |>
+  mutate(Status = str_split_i(ID, pattern = "_", 2))
 ggplot(
   data = random_effects,
   aes(x = Grey_patch, y = Random_effect, color = ID, group = ID)
 ) +
   geom_hline(
     data = Data_prediction,
-    aes(yintercept = Variance),
-    linetype = "dashed",
-    color = "red"
+    aes(yintercept = Variance, linetype = Site),
+    color = "black",
+    linewidth = 1.5
   ) +
+  scale_colour_viridis_d() +
   geom_point() +
   geom_line() +
   facet_grid(cols = vars(Site, Status)) +
