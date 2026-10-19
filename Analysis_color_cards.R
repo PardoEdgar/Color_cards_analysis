@@ -265,35 +265,35 @@ ggplot(data = data) +
 
 data_underwater <- data |> dplyr::filter(Site == "Underwater")
 
-Model_base <- glmmTMB(
+Model_base_underwater <- glmmTMB(
   log(R) ~ Grey_patch + (1 | ID:Status),
   data = data_underwater,
   family = gaussian()
 )
 
-summary(Model_base)
-Model_base_res <- simulateResiduals(Model_base, n = 3000)
-plot(Model_base_res)
+summary(Model_base_underwater)
+Model_base_underwater_res <- simulateResiduals(Model_base_underwater, n = 3000)
+plot(Model_base_underwater_res)
 
 Data_Var <- data.frame(Mean = Prediction$fit, Variance = Prediction$se.fit) |>
   mutate(Site = "Underwater")
 
 Data_prediction_underwater <- Data_Var[1, ]
 
-model <- glmmTMB(
+model_underwater <- glmmTMB(
   log(R) ~ Grey_patch + (1 | ID:Grey_patch:Status),
   data = data_underwater,
   family = gaussian()
 )
-predict(model, se.fit = TRUE)
+predict(model_underwater, se.fit = TRUE)
 
-summary(model)
-model_res <- simulateResiduals(model, n = 2000)
+summary(model_underwater)
+model_underwater_res <- simulateResiduals(model_underwater, n = 2000)
 
-plot(model_res)
+plot(model_underwater_res)
 
 
-ranef_underwater <- ranef(model)$cond$`ID:Grey_patch:Status` |>
+ranef_underwater <- ranef(model_underwater)$cond$`ID:Grey_patch:Status` |>
   rownames_to_column("ID:Grey_Patch:Status") |>
   separate(
     col = "ID:Grey_Patch:Status",
@@ -307,16 +307,16 @@ ranef_underwater <- ranef(model)$cond$`ID:Grey_patch:Status` |>
 data_lab <- data |> dplyr::filter(Site == "Lab")
 
 
-Model_base_lab <- glmmTMB(
+model_base_lab <- glmmTMB(
   log(R) ~ Grey_patch + (1 | ID),
   data = data_lab,
   family = gaussian()
 )
 
-summary(Model_base_lab)
-Model_base_res_lab <- simulateResiduals(Model_base_lab, n = 3000)
-plot(Model_base_res_lab)
-prediction_lab <- predict(Model_base_lab, se.fit = TRUE)
+summary(model_base_lab)
+Model_base_underwater_res_lab <- simulateResiduals(model_base_lab, n = 3000)
+plot(Model_base_underwater_res_lab)
+prediction_lab <- predict(model_base_lab, se.fit = TRUE)
 
 Data_prediction_lab <- data.frame(
   Mean = prediction_lab$fit,
@@ -333,12 +333,9 @@ model_lab <- glmmTMB(
   family = gaussian()
 )
 
-
 summary(model_lab)
-model_lab_res <- simulateResiduals(model, n = 2000)
+model_lab_res <- simulateResiduals(model_underwater, n = 2000)
 plot(model_lab_res)
-
-ranef(model)
 
 ranef_lab <- ranef(model_lab)$cond$`ID:Grey_patch:Status` |>
   rownames_to_column("ID:Grey_Patch:Status") |>
@@ -366,3 +363,6 @@ ggplot(
   geom_line() +
   facet_grid(cols = vars(Site, Status)) +
   theme_classic()
+
+AIC(Model_base_underwater, model_underwater)
+AIC(model_base_lab, model_lab)
