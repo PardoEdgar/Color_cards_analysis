@@ -279,7 +279,22 @@ summary(Model_base_underwater)
 Model_base_underwater_res <- simulateResiduals(Model_base_underwater, n = 3000)
 plot(Model_base_underwater_res)
 
-Data_Var <- data.frame(Mean = Prediction$fit, Variance = Prediction$se.fit) |>
+newdata_underwater <- data.frame(
+  Grey_patch = levels(data_underwater$Grey_patch),
+  ID = data_underwater$ID[1]
+)
+
+Prediction_underwater <- predict(
+  Model_base_underwater,
+  newdata = newdata_underwater,
+  re.form = ~0,
+  se.fit = TRUE
+)
+
+Data_Var <- data.frame(
+  Mean = exp(Prediction_underwater$fit),
+  Variance = exp(Prediction_underwater$se.fit)
+) |>
   mutate(Site = "Underwater")
 
 Data_prediction_underwater <- Data_Var[1, ]
@@ -289,8 +304,6 @@ model_underwater <- glmmTMB(
   data = data_underwater,
   family = gaussian()
 )
-predict(model_underwater, se.fit = TRUE)
-
 summary(model_underwater)
 model_underwater_res <- simulateResiduals(model_underwater, n = 2000)
 
@@ -320,11 +333,23 @@ model_base_lab <- glmmTMB(
 summary(model_base_lab)
 Model_base_underwater_res_lab <- simulateResiduals(model_base_lab, n = 3000)
 plot(Model_base_underwater_res_lab)
-prediction_lab <- predict(model_base_lab, se.fit = TRUE)
+
+
+newdata_lab <- data.frame(
+  Grey_patch = levels(data_lab$Grey_patch),
+  ID = data_underwater$ID[1]
+)
+
+Prediction_lab <- predict(
+  model_base_lab,
+  newdata = newdata_lab,
+  re.form = ~0,
+  se.fit = TRUE
+)
 
 Data_prediction_lab <- data.frame(
-  Mean = prediction_lab$fit,
-  Variance = prediction_lab$se.fit
+  Mean = exp(prediction_lab$fit),
+  Variance = exp(prediction_lab$se.fit)
 ) |>
   mutate(Site = "Lab")
 
@@ -357,7 +382,7 @@ random_effects <- random_effects |>
   mutate(Status = str_split_i(ID, pattern = "_", 2))
 ggplot(
   data = random_effects,
-  aes(x = Grey_patch, y = Random_effect, color = ID, group = ID)
+  aes(x = Grey_patch, y = exp(Random_effect), color = ID, group = ID)
 ) +
   geom_hline(
     data = Data_prediction,
@@ -373,3 +398,5 @@ ggplot(
 
 AIC(Model_base_underwater, model_underwater)
 AIC(model_base_lab, model_lab)
+
+Data_prediction
