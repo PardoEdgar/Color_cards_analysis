@@ -267,9 +267,11 @@ ggplot(data = data) +
   facet_grid(rows = vars(Grey_patch), cols = vars(Status)) +
   theme_classic()
 
-data_underwater <- data |> dplyr::filter(Site == "Underwater")
+data_underwater <- data |>
+  dplyr::filter(Site == "Underwater") |>
+  dplyr::filter(!Grey_patch %in% c("G0", "G5")) |>
 
-Model_base_underwater <- glmmTMB(
+  Model_base_underwater <- glmmTMB(
   log(R) ~ Grey_patch + (1 | ID),
   data = data_underwater,
   family = gaussian()
@@ -382,7 +384,7 @@ random_effects <- random_effects |>
   mutate(Status = str_split_i(ID, pattern = "_", 2))
 
 
-ranef_lab_base <- ranef(Model_base_underwater)$cond$`ID` |>
+ranef_lab_base <- ranef(model_base_lab)$cond$`ID` |>
   rownames_to_column("ID") |>
   rename(Random_effect = '(Intercept)') |>
   mutate(Site = "Lab") |>
@@ -425,3 +427,44 @@ ggplot(
 
 AIC(Model_base_underwater, model_underwater)
 AIC(model_base_lab, model_lab)
+
+
+data_model_underwater <- data.frame(
+  Grey_patch = factor(levels(data_underwater$Grey_patch)),
+  ID = data_underwater$ID
+)
+
+Prediction_base_model_underwater <- predict(
+  Model_base_underwater,
+  newdata = data_model_underwater,
+  re.form = ~0,
+  se.fit = TRUE
+)
+class(data_underwater$Grey_patch)
+levels(data_underwater$Grey_patch)
+
+unique(data_underwater$Grey_patch)
+
+Model_base_underwater$xlevels
+
+Plot_data_base_model <- data_model_underwater |>
+  data.frame(
+    mean = Prediction_base_model_underwater$fit,
+    SE = Prediction_base_model_underwater$se.fit
+  ) |>
+  dplyr::mutate(Min_CI = SE + 1.96 * SE, Max_Ci = SE - 1.96 * SE)
+
+
+Prediction_model_underwater <- predict(
+  model_underwater,
+  newdata = data_model_underwater,
+  re.form = ~0,
+  se.fit = TRUE
+)
+
+Plot_data_model_underwater <- data_model_underwater |>
+  data.frame(
+    mean = Prediction_model_underwater$fit,
+    SE = Prediction_model_underwater$se.fit
+  ) |>
+  dplyr::mutate(Min_CI = SE + 1.96 * SE, Max_Ci = SE - 1.96 * SE)
