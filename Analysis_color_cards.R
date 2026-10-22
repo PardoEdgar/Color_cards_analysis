@@ -3,238 +3,10 @@ library(glmmTMB)
 library(DHARMa)
 library(readxl)
 
-data <- read_csv(
-  "C:/Users/jandr/Downloads/Raw_underwater_vs_lab_pixels_data.csv"
-)
-data_G0 <- data |> dplyr::filter(Grey_patch == "G0")
-
-data_G0 <- data_G0 |>
-  mutate(Status = factor(Status)) |>
-  mutate(Site = factor(Site)) |>
-  mutate(ID = factor(ID)) |>
-  mutate(Case = factor(Case))
-Mlm <- glmmTMB(log(R) ~ Site + (1 | ID), data = data_G0, family = gaussian())
-summary(Mlm)
-M1m_res <- simulateResiduals(Mlm, n = 2000)
-plot(M1m_res)
-
-summary(data_G0)
-colSums(is.na(data_G0))
-
-
-data_G1 <- data |> dplyr::filter(Grey_patch == "G1")
-
-data_G1 <- data_G1 |>
-  mutate(Status = factor(Status)) |>
-  mutate(Site = factor(Site)) |>
-  mutate(ID = factor(ID)) |>
-  mutate(Case = factor(Case))
-
-Mlm <- glmmTMB(log(R) ~ Status + (1 | ID), data = data_G1, family = gaussian())
-summary(Mlm)
-M1m_res <- simulateResiduals(Mlm, n = 2000)
-plot(M1m_res)
-
-
-data_G2 <- data |> dplyr::filter(Grey_patch == "G2")
-
-data_G2 <- data_G2 |>
-  mutate(Status = factor(Status)) |>
-  mutate(Site = factor(Site)) |>
-  mutate(ID = factor(ID)) |>
-  mutate(Case = factor(Case))
-
-Mlm <- glmmTMB(R ~ Site + (1 | ID), data = data_G2, family = gaussian())
-summary(Mlm)
-M1m_res <- simulateResiduals(Mlm, n = 2000)
-plot(M1m_res)
-
-data_G3 <- data |> dplyr::filter(Grey_patch == "G3")
-
-
-data_G3 <- data_G3 |>
-  mutate(Status = factor(Status)) |>
-  mutate(Site = factor(Site)) |>
-  mutate(ID = factor(ID)) |>
-  mutate(Case = factor(Case))
-
-Mlm <- glmmTMB(R ~ Site + (1 | ID), data = data_G3, family = gaussian())
-summary(Mlm)
-M1m_res <- simulateResiduals(Mlm, n = 2000)
-plot(M1m_res)
-
-data_G4 <- data |> dplyr::filter(Grey_patch == "G4")
-
-data_G4 <- data_G4 |>
-  mutate(Status = factor(Status)) |>
-  mutate(Site = factor(Site)) |>
-  mutate(ID = factor(ID)) |>
-  mutate(Case = factor(Case))
-
-Mlm <- glmmTMB(R ~ Site + (1 | ID), data = data_G4, family = gaussian())
-summary(Mlm)
-M1m_res <- simulateResiduals(Mlm, n = 2000)
-plot(M1m_res)
-
-data_G5 <- data |> dplyr::filter(Grey_patch == "G5")
-
-data_G5 <- data_G5 |>
-  mutate(Status = factor(Status)) |>
-  mutate(Site = factor(Site)) |>
-  mutate(ID = factor(ID)) |>
-  mutate(Case = factor(Case))
-
-Mlm <- glmmTMB(R ~ Site + (1 | ID), data = data_G5, family = gaussian())
-summary(Mlm)
-M1m_res <- simulateResiduals(Mlm, n = 2000)
-plot(M1m_res)
-
-
-ggplot(data_G0, aes(x = R, fill = Site)) +
-  geom_density(alpha = 0.3) +
-  facet_grid(cols = vars(Case, Status)) +
-  theme_classic() +
-  theme(legend.position = "top")
-
-
-ggplot(data_G1, aes(x = R, fill = Site)) +
-  geom_density(alpha = 0.3) +
-  facet_grid(cols = vars(Case, Status)) +
-  theme_classic() +
-  theme(legend.position = "top")
-
-
-ggplot(data_G2, aes(x = R, fill = Site)) +
-  geom_density(alpha = 0.3) +
-  facet_grid(cols = vars(Case, Status)) +
-  theme_classic() +
-  theme(legend.position = "top")
-
-
-ggplot(data_G3, aes(x = R, fill = Site)) +
-  geom_density(alpha = 0.3) +
-  facet_grid(cols = vars(Case, Status)) +
-  theme_classic() +
-  theme(legend.position = "top")
-
-ggplot(data_G2, aes(x = R, fill = Site)) +
-  geom_density(alpha = 0.2) +
-  facet_grid(cols = vars(Case, Status)) +
-  theme_classic() +
-  theme(legend.position = "top")
-
-logs <- function(x) {
-  logx <- log(x)
-  standardized <- logx / max(logx)
-  return(standardized)
-}
-data <- data |> mutate(across(c(R, G, B), logs, .names = "{.col}_log"))
-
-color <- c("blue", "green", "red")
-
-data_long <- pivot_longer(
-  data,
-  cols = c(R_log, G_log, B_log),
-  names_to = "RGB",
-  values_to = "Intensity"
-)
-
-ggplot(data_long, aes(x = Intensity, fill = RGB)) +
-  labs(
-    title = "RGB intensity changes across grey patches distribution values; G0 (Higher intensity), G5 (Lower intensity)"
-  ) +
-  geom_density(alpha = 0.2) +
-  scale_fill_manual(values = color) +
-  facet_grid(cols = vars(Grey_patch), rows = vars(RGB)) +
-  theme_classic() +
-  theme(legend.position = "top")
-
-stat_summary_long <- data_long |>
-  group_by(Status, Case, Grey_patch, RGB) |>
-  summarise(
-    Mean = mean(Intensity),
-    SD_max = Mean + sd(Intensity),
-    SD_min = Mean - sd(Intensity)
-  )
-
-stat_summary <- data |>
-  group_by(Status, Case, Grey_patch, Site) |>
-  summarise(
-    Mean = mean(R_log),
-    SD_max = Mean + sd(R_log),
-    SD_min = Mean - sd(R_log)
-  )
-
-
-color <- c("white", "#F0FFFF", "#F0FFFF", "#E0EEEE", "#C1CDCD", "#838B8B")
-
-
-ggplot(
-  data_long,
-  aes(x = interaction(Case, Status), y = Intensity, fill = Grey_patch)
-) +
-  geom_boxplot(alpha = 2) +
-  geom_jitter(color = "grey", size = 0.5, alpha = 0.2) +
-  scale_fill_manual(values = color) +
-  facet_grid(cols = vars(Grey_patch), rows = vars(RGB)) +
-  geom_errorbar(
-    data = stat_summary_long,
-    aes(x = interaction(Case, Status), ymax = SD_max, ymin = SD_min),
-    size = 1,
-    width = 0.3,
-    inherit.aes = FALSE
-  ) +
-  geom_point(
-    data = stat_summary_long,
-    aes(x = interaction(Case, Status), y = Mean),
-    size = 2,
-    color = "darkorange",
-    inherit.aes = FALSE
-  ) +
-  labs(
-    title = "RGB intensity changes across grey patches distribution values; G0 (Higher intensity), G5 (Lower intensity)",
-    x = "Case and Status",
-    y = "Log RGB intensity (0-1)"
-  ) +
-  theme_classic() +
-  theme(
-    legend.position = "top",
-    axis.text.x = element_text(angle = 60, vjust = 0.5)
-  )
-
-
-ggplot(data, aes(x = interaction(Case, Status), y = R_log, fill = Grey_patch)) +
-  geom_boxplot(alpha = 2) +
-  geom_jitter(color = "grey", size = 0.5, alpha = 0.2) +
-  scale_fill_manual(values = color) +
-  facet_grid(cols = vars(Site), rows = vars(Grey_patch)) +
-  geom_errorbar(
-    data = stat_summary,
-    aes(x = interaction(Case, Status), ymax = SD_max, ymin = SD_min),
-    size = 1,
-    width = 0.3,
-    inherit.aes = FALSE
-  ) +
-  geom_point(
-    data = stat_summary,
-    aes(x = interaction(Case, Status), y = Mean),
-    size = 2,
-    color = "darkorange",
-    inherit.aes = FALSE
-  ) +
-  labs(
-    title = "RGB intensity changes across grey patches distribution values; G0 (Higher intensity), G5 (Lower intensity)",
-    x = "Case:Status",
-    y = "Log R intensity (0-1)"
-  ) +
-  theme_classic() +
-  theme(
-    legend.position = "top",
-    axis.text.x = element_text(angle = 45, vjust = 0.5)
-  )
-
 #############################################################################################
+path <- "C:/Users/jandr/Downloads/Data_pixels.csv"
 path <- "C:/Users/jandr/Downloads/Gray_world_whitebalanced_underwater_vs_air_Data_pixels.csv"
+
 data <- read_csv(path)
 data <- data |>
   mutate(
@@ -245,10 +17,11 @@ data <- data |>
       data$ID,
       "_",
       ifelse(data$Status == "Preserved", "P", "D")
-    ))
-  ) |>
+    )))|>
   dplyr::filter(!Grey_patch %in% c("G0", "G5")) |>
-  mutate(Ratio_RG = (R / G), Ratio_RB = (R / B))
+  mutate(Ratio_RG = (R / G), Ratio_RB = (R / B))|>   mutate(
+    Grey_patch = factor(Grey_patch, levels= c("G1","G2","G3","G4"),
+    )) 
 
 
 data_long <- pivot_longer(
@@ -260,7 +33,7 @@ data_long <- pivot_longer(
 
 ggplot(data = data) +
   geom_density(
-    aes(x = Ratio_RB, color = Site, fill = Site),
+    aes(x = log(R), color = Site, fill = Site),
     linewidth = 1,
     alpha = 0.5
   ) +
@@ -268,23 +41,23 @@ ggplot(data = data) +
   theme_classic()
 
 data_underwater <- data |>
-  dplyr::filter(Site == "Underwater") |>
-  dplyr::filter(!Grey_patch %in% c("G0", "G5")) |>
-
-  Model_base_underwater <- glmmTMB(
-  log(R) ~ Grey_patch + (1 | ID),
-  data = data_underwater,
-  family = gaussian()
-)
+  dplyr::filter(Site == "Underwater") 
+  
+Model_base_underwater <- glmmTMB(
+    log(R) ~ Grey_patch + (1 | ID),
+    data = data_underwater,
+    family = gaussian()
+  )
 
 summary(Model_base_underwater)
+qqnorm(resid(Model_base_underwater))
+qqline(resid(Model_base_underwater))
 Model_base_underwater_res <- simulateResiduals(Model_base_underwater, n = 3000)
 plot(Model_base_underwater_res)
 
-newdata_underwater <- data.frame(
-  Grey_patch = levels(data_underwater$Grey_patch),
-  ID = data_underwater$ID[1]
-)
+newdata_underwater <- data_underwater |>
+  distinct(Grey_patch, .keep_all = TRUE)
+
 
 Prediction_underwater <- predict(
   Model_base_underwater,
@@ -308,7 +81,8 @@ model_underwater <- glmmTMB(
 )
 summary(model_underwater)
 model_underwater_res <- simulateResiduals(model_underwater, n = 2000)
-
+qqnorm(resid(model_underwater))
+qqline(resid(model_underwater))
 plot(model_underwater_res)
 
 
@@ -327,14 +101,16 @@ data_lab <- data |> dplyr::filter(Site == "Lab")
 
 
 model_base_lab <- glmmTMB(
-  log(R) ~ Grey_patch + (1 | ID),
+  log(R) ~ Grey_patch  + (1 | ID),
   data = data_lab,
   family = gaussian()
 )
 
 summary(model_base_lab)
-Model_base_underwater_res_lab <- simulateResiduals(model_base_lab, n = 3000)
-plot(Model_base_underwater_res_lab)
+Model_base_res_lab <- simulateResiduals(model_base_lab, n = 2000)
+qqnorm(resid(model_base_lab))
+qqline(resid(model_base_lab))
+plot(Model_base_res_lab)
 
 
 newdata_lab <- data.frame(
@@ -350,8 +126,8 @@ Prediction_lab <- predict(
 )
 
 Data_prediction_lab <- data.frame(
-  Mean = exp(prediction_lab$fit),
-  Variance = exp(prediction_lab$se.fit)
+  Mean = exp(Prediction_lab$fit),
+  Variance = exp(Prediction_lab$se.fit)
 ) |>
   mutate(Site = "Lab")
 
@@ -363,9 +139,11 @@ model_lab <- glmmTMB(
   data = data_lab,
   family = gaussian()
 )
-
+qqnorm(resid(model_lab))
+qqline(resid(model_lab))
 summary(model_lab)
-model_lab_res <- simulateResiduals(model_underwater, n = 2000)
+
+model_lab_res <- simulateResiduals(model_lab, n = 2000)
 plot(model_lab_res)
 
 ranef_lab <- ranef(model_lab)$cond$`ID:Grey_patch` |>
@@ -379,7 +157,6 @@ ranef_lab <- ranef(model_lab)$cond$`ID:Grey_patch` |>
   mutate(Site = "Lab")
 
 random_effects <- bind_rows(ranef_underwater, ranef_lab)
-random_effects$Status <- split(random_effects$ID, , sep = "_")
 random_effects <- random_effects |>
   mutate(Status = str_split_i(ID, pattern = "_", 2))
 
@@ -398,7 +175,21 @@ ranef_underwater_based <- ranef(Model_base_underwater)$cond$`ID` |>
   mutate(Status = ifelse(grepl("_D$", ID), "D", "P"))
 
 
-ranef_model_based <- bind_rows(ranef_lab_base, ranef_underwater_based)
+data_amador <- data |> dplyr::filter(Site =="Amador")
+Model_amador <- glmmTMB(log(R) ~ Grey_patch + (1|ID:Grey_patch), data = data_amador, family = gaussian())
+qqnorm(resid(Model_amador))
+qqline(resid(Model_amador))
+Model_amador_res <- simulateResiduals(Model_amador, n=2000)
+plot(Model_amador_res
+)
+
+########Random effects for complexed model
+ggplot(data = random_effects, aes(x= Grey_patch, y=(Random_effect), color = ID, group = ID)) +
+  geom_point()+
+  geom_line()+
+  facet_grid(cols = vars(Site, Status)) +
+  theme_classic()
+  
 
 
 ggplot(
@@ -428,43 +219,249 @@ ggplot(
 AIC(Model_base_underwater, model_underwater)
 AIC(model_base_lab, model_lab)
 
+######################################################################
+##Underwater
+Simple_model_R <- glmmTMB(log(R) ~ Grey_patch + ( 1 | ID), data = data_underwater , family = gaussian())
+Simple_model_G <- glmmTMB(log(G) ~ Grey_patch + ( 1 | ID), data = data_underwater , family = gaussian())
+Simple_model_B <- glmmTMB(log(B) ~ Grey_patch + ( 1 | ID), data = data_underwater , family = gaussian())
 
-data_model_underwater <- data.frame(
-  Grey_patch = factor(levels(data_underwater$Grey_patch)),
-  ID = data_underwater$ID
-)
+newdata_underwater <- data_underwater |>
+  distinct(Grey_patch, .keep_all = TRUE)
 
-Prediction_base_model_underwater <- predict(
-  Model_base_underwater,
-  newdata = data_model_underwater,
-  re.form = ~0,
-  se.fit = TRUE
-)
-class(data_underwater$Grey_patch)
-levels(data_underwater$Grey_patch)
-
-unique(data_underwater$Grey_patch)
-
-Model_base_underwater$xlevels
-
-Plot_data_base_model <- data_model_underwater |>
-  data.frame(
-    mean = Prediction_base_model_underwater$fit,
-    SE = Prediction_base_model_underwater$se.fit
-  ) |>
-  dplyr::mutate(Min_CI = SE + 1.96 * SE, Max_Ci = SE - 1.96 * SE)
-
-
-Prediction_model_underwater <- predict(
-  model_underwater,
-  newdata = data_model_underwater,
-  re.form = ~0,
+Prediction_base_model_underwater_R <- predict(
+  Simple_model_R,
+  newdata = newdata_underwater,
+  re.form = NULL,
   se.fit = TRUE
 )
 
-Plot_data_model_underwater <- data_model_underwater |>
-  data.frame(
-    mean = Prediction_model_underwater$fit,
-    SE = Prediction_model_underwater$se.fit
+Prediction_base_model_underwater_G <- predict(
+  Simple_model_G,
+  newdata = newdata_underwater,
+  re.form = NULL,
+  se.fit = TRUE
+)
+
+Prediction_base_model_underwater_B <- predict(
+  Simple_model_B,
+  newdata = newdata_underwater,
+  re.form = NULL,
+  se.fit = TRUE
+)
+
+Plot_data_base_model_R <-
+  data.frame(Grey_patch = levels(data_underwater$Grey_patch),
+    mean = Prediction_base_model_underwater_R$fit,
+    SE = Prediction_base_model_underwater_R$se.fit
   ) |>
-  dplyr::mutate(Min_CI = SE + 1.96 * SE, Max_Ci = SE - 1.96 * SE)
+  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "R")
+
+Plot_data_base_model_G <-
+  data.frame(Grey_patch = levels(data_underwater$Grey_patch),
+             mean = Prediction_base_model_underwater_G$fit,
+             SE = Prediction_base_model_underwater_G$se.fit
+  ) |>
+  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE)|>  mutate(Channel = "G")
+
+
+Plot_data_base_model_B<-
+  data.frame(Grey_patch = levels(data_underwater$Grey_patch),
+             mean = Prediction_base_model_underwater_B$fit,
+             SE = Prediction_base_model_underwater_B$se.fit
+  ) |>
+  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "B")
+
+Plot_data_base_model_underwater <- bind_rows(Plot_data_base_model_R,Plot_data_base_model_G,Plot_data_base_model_B) |> mutate(Site = "Underwater")
+
+##Laboratory
+Simple_model_R_lab <- glmmTMB(log(R) ~ Grey_patch + ( 1 | ID), data = data_lab , family = gaussian())
+Simple_model_G_lab  <- glmmTMB(log(G) ~ Grey_patch + ( 1 | ID), data = data_lab , family = gaussian())
+Simple_model_B_lab  <- glmmTMB(log(B) ~ Grey_patch + ( 1 | ID), data = data_lab , family = gaussian())
+
+newdata_lab <- data_lab |>
+  distinct(Grey_patch, .keep_all = TRUE)
+
+Prediction_base_model_R_lab <- predict(
+  Simple_model_R_lab,
+  newdata = newdata_lab,
+  re.form = NULL,
+  se.fit = TRUE
+)
+
+Prediction_base_model_G_lab <- predict(
+  Simple_model_G_lab,
+  newdata = newdata_lab,
+  re.form = NULL,
+  se.fit = TRUE
+)
+
+Prediction_base_modeL_B_lab <- predict(
+  Simple_model_B_lab,
+  newdata = newdata_lab,
+  re.form = NULL,
+  se.fit = TRUE
+)
+
+Plot_data_base_model_R_lab <-
+  data.frame(Grey_patch = levels(data_lab$Grey_patch),
+             mean = Prediction_base_model_R_lab$fit,
+             SE = Prediction_base_model_R_lab$se.fit
+  ) |>
+  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "R")
+
+Plot_data_base_model_G_lab <-
+  data.frame(Grey_patch = levels(data_lab$Grey_patch),
+             mean = Prediction_base_model_G_lab$fit,
+             SE = Prediction_base_model_G_lab$se.fit
+  ) |>
+  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE)|>  mutate(Channel = "G")
+
+
+Plot_data_base_model_B_lab<-
+  data.frame(Grey_patch = levels(data_lab$Grey_patch),
+             mean = Prediction_base_modeL_B_lab$fit,
+             SE = Prediction_base_modeL_B_lab$se.fit
+  ) |>
+  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "B")
+
+Plot_data_base_model_lab<- bind_rows(Plot_data_base_model_R_lab,Plot_data_base_model_G_lab,Plot_data_base_model_B_lab) |> mutate(Site = "Lab")
+
+Plot_data_base_model_all <- bind_rows(Plot_data_base_model_underwater, Plot_data_base_model_lab)
+Plot_data_base_model_all$Channel <- factor(Plot_data_base_model_all$Channel, levels = c("R","G","B"))
+
+colors <- c("darkred", "darkgreen","darkblue")
+
+plot_1 <- ggplot(Plot_data_base_model_all,aes(x= interaction(Channel, Grey_patch), y=exp(mean), color = Channel)) + geom_point() + 
+  geom_errorbar(aes(ymin=exp(Min_CI), ymax= exp(Max_Ci), width = 0.2)) +
+  scale_color_manual(values = colors)+
+  facet_grid(col= vars(Site))+
+  theme_classic()+
+  theme(legend.position = "top", axis.text.x = (element_text(hjust = 0.9, angle  = 60)))
+
+
+
+
+#########################################################################
+#########################################################################
+##Underwater
+Simple_model_R <- glmmTMB(log(R) ~ Grey_patch + ( 1 | ID:Grey_patch), data = data_underwater , family = gaussian())
+Simple_model_G <- glmmTMB(log(G) ~ Grey_patch + ( 1 | ID:Grey_patch), data = data_underwater , family = gaussian())
+Simple_model_B <- glmmTMB(log(B) ~ Grey_patch + ( 1 | ID:Grey_patch), data = data_underwater , family = gaussian())
+
+newdata_underwater <- data_underwater |>
+  distinct(Grey_patch, .keep_all = TRUE)
+
+Prediction_base_model_underwater_R <- predict(
+  Simple_model_R,
+  newdata = newdata_underwater,
+  re.form = NULL,
+  se.fit = TRUE
+)
+
+Prediction_base_model_underwater_G <- predict(
+  Simple_model_G,
+  newdata = newdata_underwater,
+  re.form = NULL,
+  se.fit = TRUE
+)
+
+Prediction_base_model_underwater_B <- predict(
+  Simple_model_B,
+  newdata = newdata_underwater,
+  re.form = NULL,
+  se.fit = TRUE
+)
+
+Plot_data_base_model_R <-
+  data.frame(Grey_patch = levels(data_underwater$Grey_patch),
+             mean = Prediction_base_model_underwater_R$fit,
+             SE = Prediction_base_model_underwater_R$se.fit
+  ) |>
+  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "R")
+
+Plot_data_base_model_G <-
+  data.frame(Grey_patch = levels(data_underwater$Grey_patch),
+             mean = Prediction_base_model_underwater_G$fit,
+             SE = Prediction_base_model_underwater_G$se.fit
+  ) |>
+  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE)|>  mutate(Channel = "G")
+
+
+Plot_data_base_model_B<-
+  data.frame(Grey_patch = levels(data_underwater$Grey_patch),
+             mean = Prediction_base_model_underwater_B$fit,
+             SE = Prediction_base_model_underwater_B$se.fit
+  ) |>
+  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "B")
+
+Plot_data_base_model_underwater <- bind_rows(Plot_data_base_model_R,Plot_data_base_model_G,Plot_data_base_model_B) |> mutate(Site = "Underwater")
+
+##Laboratory
+Simple_model_R_lab <- glmmTMB(log(R) ~ Grey_patch + ( 1 | ID:Grey_patch), data = data_lab , family = gaussian())
+Simple_model_G_lab  <- glmmTMB(log(G) ~ Grey_patch + ( 1 | ID:Grey_patch), data = data_lab , family = gaussian())
+Simple_model_B_lab  <- glmmTMB(log(B) ~ Grey_patch + ( 1 | ID:Grey_patch), data = data_lab , family = gaussian())
+
+newdata_lab <- data_lab |>
+  distinct(Grey_patch, .keep_all = TRUE)
+
+Prediction_base_model_R_lab <- predict(
+  Simple_model_R_lab,
+  newdata = newdata_lab,
+  re.form = NULL,
+  se.fit = TRUE
+)
+
+Prediction_base_model_G_lab <- predict(
+  Simple_model_G_lab,
+  newdata = newdata_lab,
+  re.form = NULL,
+  se.fit = TRUE
+)
+
+Prediction_base_modeL_B_lab <- predict(
+  Simple_model_B_lab,
+  newdata = newdata_lab,
+  re.form = NULL,
+  se.fit = TRUE
+)
+
+Plot_data_base_model_R_lab <-
+  data.frame(Grey_patch = levels(data_lab$Grey_patch),
+             mean = Prediction_base_model_R_lab$fit,
+             SE = Prediction_base_model_R_lab$se.fit
+  ) |>
+  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "R")
+
+Plot_data_base_model_G_lab <-
+  data.frame(Grey_patch = levels(data_lab$Grey_patch),
+             mean = Prediction_base_model_G_lab$fit,
+             SE = Prediction_base_model_G_lab$se.fit
+  ) |>
+  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE)|>  mutate(Channel = "G")
+
+
+Plot_data_base_model_B_lab<-
+  data.frame(Grey_patch = levels(data_lab$Grey_patch),
+             mean = Prediction_base_modeL_B_lab$fit,
+             SE = Prediction_base_modeL_B_lab$se.fit
+  ) |>
+  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "B")
+
+Plot_data_base_model_lab<- bind_rows(Plot_data_base_model_R_lab,Plot_data_base_model_G_lab,Plot_data_base_model_B_lab) |> mutate(Site = "Lab")
+
+Plot_data_base_model_all <- bind_rows(Plot_data_base_model_underwater, Plot_data_base_model_lab)
+Plot_data_base_model_all$Channel <- factor(Plot_data_base_model_all$Channel, levels = c("R","G","B"))
+
+colors <- c("darkred", "darkgreen","darkblue")
+
+plot_2 <-ggplot(Plot_data_base_model_all,aes(x= interaction(Channel, Grey_patch), y=exp(mean), color = Channel)) + geom_point() + 
+  geom_errorbar(aes(ymin=exp(Min_CI), ymax= exp(Max_Ci), width = 0.2)) +
+  scale_color_manual(values = colors)+
+  facet_grid(col= vars(Site))+
+  theme_classic() + theme(legend.position = "top") +
+theme(legend.position = "top", axis.text.x = (element_text(hjust = 0.9, angle  = 60)))
+
+plots <- c(plot_1,plot_2)
+gridExtra::grid.arrange(grobs = plots , ncol=2)
+
+AIC(Simple_model_R, Simple_model_R_lab)
