@@ -251,14 +251,14 @@ Plot_data_base_model_R <-
     mean = Prediction_base_model_underwater_R$fit,
     SE = Prediction_base_model_underwater_R$se.fit
   ) |>
-  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "R")
+  dplyr::mutate(Min_CI = mean - 1.96 * SE, Max_Ci = mean + 1.96 * SE) |>  mutate(Channel = "R")
 
 Plot_data_base_model_G <-
   data.frame(Grey_patch = levels(data_underwater$Grey_patch),
              mean = Prediction_base_model_underwater_G$fit,
              SE = Prediction_base_model_underwater_G$se.fit
   ) |>
-  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE)|>  mutate(Channel = "G")
+  dplyr::mutate(Min_CI = mean - 1.96 * SE, Max_Ci = mean + 1.96 * SE)|>  mutate(Channel = "G")
 
 
 Plot_data_base_model_B<-
@@ -266,7 +266,7 @@ Plot_data_base_model_B<-
              mean = Prediction_base_model_underwater_B$fit,
              SE = Prediction_base_model_underwater_B$se.fit
   ) |>
-  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "B")
+  dplyr::mutate(Min_CI = mean - 1.96 * SE, Max_Ci = mean +1.96 * SE) |>  mutate(Channel = "B")
 
 Plot_data_base_model_underwater <- bind_rows(Plot_data_base_model_R,Plot_data_base_model_G,Plot_data_base_model_B) |> mutate(Site = "Underwater")
 
@@ -304,14 +304,14 @@ Plot_data_base_model_R_lab <-
              mean = Prediction_base_model_R_lab$fit,
              SE = Prediction_base_model_R_lab$se.fit
   ) |>
-  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "R")
+  dplyr::mutate(Min_CI = mean - 1.96 * SE, Max_Ci = mean +1.96 * SE) |>  mutate(Channel = "R")
 
 Plot_data_base_model_G_lab <-
   data.frame(Grey_patch = levels(data_lab$Grey_patch),
              mean = Prediction_base_model_G_lab$fit,
              SE = Prediction_base_model_G_lab$se.fit
   ) |>
-  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE)|>  mutate(Channel = "G")
+  dplyr::mutate(Min_CI = mean - 1.96 * SE, Max_Ci = mean + 1.96 * SE)|>  mutate(Channel = "G")
 
 
 Plot_data_base_model_B_lab<-
@@ -319,7 +319,7 @@ Plot_data_base_model_B_lab<-
              mean = Prediction_base_modeL_B_lab$fit,
              SE = Prediction_base_modeL_B_lab$se.fit
   ) |>
-  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "B")
+  dplyr::mutate(Min_CI = mean - 1.96 * SE, Max_Ci = mean + 1.96 * SE) |>  mutate(Channel = "B")
 
 Plot_data_base_model_lab<- bind_rows(Plot_data_base_model_R_lab,Plot_data_base_model_G_lab,Plot_data_base_model_B_lab) |> mutate(Site = "Lab")
 
@@ -341,57 +341,57 @@ plot_1 <- ggplot(Plot_data_base_model_all,aes(x= interaction(Channel, Grey_patch
 #########################################################################
 #########################################################################
 ##Underwater
-Complex_model_R <- glmmTMB(log(R) ~ Grey_patch + ( 1 | ID:Grey_patch), data = data_underwater , family = gaussian())
-Complex_model_G <- glmmTMB(log(G) ~ Grey_patch + ( 1 | ID:Grey_patch), data = data_underwater , family = gaussian())
-Complex_model_B <- glmmTMB(log(B) ~ Grey_patch + ( 1 | ID:Grey_patch), data = data_underwater , family = gaussian())
+Complex_model_R_underwater <- glmmTMB(log(R) ~ Grey_patch + ( 1 | ID:Grey_patch), data = data_underwater , family = gaussian())
+Complex_model_G_underwater  <- glmmTMB(log(G) ~ Grey_patch + ( 1 | ID:Grey_patch), data = data_underwater , family = gaussian())
+Complex_model_B_underwater  <- glmmTMB(log(B) ~ Grey_patch + ( 1 | ID:Grey_patch), data = data_underwater , family = gaussian())
 
 newdata_underwater <- data_underwater |>
   distinct(Grey_patch, .keep_all = TRUE)
 
 Prediction_complex_model_underwater_R <- predict(
-  Complex_model_R,
+  Complex_model_R_underwater ,
   newdata = newdata_underwater,
   re.form = ~0,
   se.fit = TRUE
 )
 
 Prediction_complex_model_underwater_G <- predict(
-  Complex_model_G,
+  Complex_model_G_underwater ,
   newdata = newdata_underwater,
   re.form = ~0,
   se.fit = TRUE
 )
 
 Prediction_complex_model_underwater_B <- predict(
-  Complex_model_B,
+  Complex_model_B_underwater ,
   newdata = newdata_underwater,
   re.form = ~0,
   se.fit = TRUE
 )
 
-Plot_data_complex_model_R <-
+Plot_data_complex_model_R_underwater  <-
   data.frame(Grey_patch = levels(data_underwater$Grey_patch),
              mean = Prediction_complex_model_underwater_R$fit,
              SE = Prediction_complex_model_underwater_R$se.fit
   ) |>
-  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "R")
+  dplyr::mutate(Min_CI = mean - 1.96 * SE, Max_Ci = mean + 1.96 * SE) |>  mutate(Channel = "R")
 
-Plot_data_complex_model_G <-
+Plot_data_complex_model_G_underwater  <-
   data.frame(Grey_patch = levels(data_underwater$Grey_patch),
              mean = Prediction_complex_model_underwater_G$fit,
              SE = Prediction_complex_model_underwater_G$se.fit
   ) |>
-  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE)|>  mutate(Channel = "G")
+  dplyr::mutate(Min_CI = mean - 1.96 * SE, Max_Ci = mean + 1.96 * SE)|>  mutate(Channel = "G")
 
 
-Plot_data_complex_model_B<-
+Plot_data_complex_model_B_underwater <-
   data.frame(Grey_patch = levels(data_underwater$Grey_patch),
              mean = Prediction_complex_model_underwater_B$fit,
              SE = Prediction_complex_model_underwater_B$se.fit
   ) |>
-  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "B")
+  dplyr::mutate(Min_CI = mean - 1.96 * SE, Max_Ci = mean + 1.96 * SE) |>  mutate(Channel = "B")
 
-Plot_data_complex_model_underwater <- bind_rows(Plot_data_complex_model_R,Plot_data_complex_model_G,Plot_data_complex_model_B) |> mutate(Site = "Underwater")
+Plot_data_complex_model_underwater <- bind_rows(Plot_data_complex_model_R_underwater ,Plot_data_complex_model_G_underwater ,Plot_data_complex_model_B_underwater ) |> mutate(Site = "Underwater")
 
 ##Laboratory
 Complex_model_R_lab <- glmmTMB(log(R) ~ Grey_patch + ( 1 | ID:Grey_patch), data = data_lab , family = gaussian())
@@ -427,14 +427,14 @@ Plot_data_complex_model_R_lab <-
              mean = Prediction_complex_model_R_lab$fit,
              SE = Prediction_complex_model_R_lab$se.fit
   ) |>
-  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "R")
+  dplyr::mutate(Min_CI = mean - 1.96 * SE, Max_Ci = mean + 1.96 * SE) |>  mutate(Channel = "R")
 
 Plot_data_complex_model_G_lab <-
   data.frame(Grey_patch = levels(data_lab$Grey_patch),
              mean = Prediction_complex_model_G_lab$fit,
              SE = Prediction_complex_model_G_lab$se.fit
   ) |>
-  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE)|>  mutate(Channel = "G")
+  dplyr::mutate(Min_CI = mean - 1.96 * SE, Max_Ci = mean + 1.96 * SE)|>  mutate(Channel = "G")
 
 
 Plot_data_complex_model_B_lab<-
@@ -442,7 +442,7 @@ Plot_data_complex_model_B_lab<-
              mean = Prediction_complex_modeL_B_lab$fit,
              SE = Prediction_complex_modeL_B_lab$se.fit
   ) |>
-  dplyr::mutate(Min_CI = mean + 1.96 * SE, Max_Ci = mean - 1.96 * SE) |>  mutate(Channel = "B")
+  dplyr::mutate(Min_CI = mean - 1.96 * SE, Max_Ci = mean + 1.96 * SE) |>  mutate(Channel = "B")
 
 Plot_data_complex_model_lab<- bind_rows(Plot_data_complex_model_R_lab,Plot_data_complex_model_G_lab,Plot_data_complex_model_B_lab) |> mutate(Site = "Lab")
 
@@ -451,8 +451,8 @@ Plot_data_complex_model_all$Channel <- factor(Plot_data_complex_model_all$Channe
 
 colors <- c("darkred", "darkgreen","darkblue")
 
-plot_2 <-ggplot(Plot_data_base_model_all,aes(x= interaction(Channel, Grey_patch), y=exp(mean), color = Channel)) + geom_point() + 
-  geom_errorbar(aes(ymin=exp(Min_CI), ymax= exp(Max_Ci), width = 0.2)) + geom_hline(yintercept = 0.13)+
+plot_2 <-ggplot(Plot_data_complex_model_all,aes(x= interaction(Channel, Grey_patch), y=exp(mean), color = Channel)) + geom_point() + 
+  geom_errorbar(aes(ymin=exp(Min_CI), ymax= exp(Max_Ci), width = 0.2)) +
   scale_color_manual(values = colors)+
   facet_grid(col= vars(Site))+
   theme_classic() + theme(legend.position = "top") +
@@ -461,4 +461,22 @@ theme(legend.position = "top", axis.text.x = (element_text(hjust = 0.9, angle  =
 plots <- c(plot_1,plot_2)
 gridExtra::grid.arrange(grobs = plots , ncol=2)
 
-AIC(Simple_model_R, Simple_model_R_lab)
+AIC(Simple_model_R_lab, Complex_model_R_lab, Model_R_more_complex)
+AIC(Simple_model_R, Complex_model_R_underwater, Model_R_more_complex)
+
+Model_R_more_complex <- glmmTMB(
+  log(R) ~ Grey_patch + Status+
+    (1 | ID) +
+    (1 | ID:Grey_patch),
+  data = data_lab,
+  family = gaussian()
+)
+
+model_res <-  simulateResiduals(Model_R_more_complex,n=2000)
+plot(model_res)
+
+0.0289+0.0049+0.0064
+
+
+0.0064/0.0402
+0.08*0.08
