@@ -5,15 +5,20 @@ import cv2
 files = 
 Transformed_2 = r"C:\Users\jandr\OneDrive - Universidad del rosario\Physiology_Photrogrammetry\Underwater\Transformed"
 os.makedirs(Transformed_2, exist_ok=True)
-FR = 1.34
-FG = 1
-FB = 1.34
+Site = "Underwater"
+UFR = 0.0833
+UFG = 1
+UFB = 0.121
+
+LFR = 0.0363
+LFG = 1
+LFB = 0.0453
 
 def main(files):
     for file in os.listdir(files):
         if file.endswith(".TIFF"):
-            image,Image_R,Image_G,Image_B = open_file(file)
-            Transformed = transform_images(image, Image_R,Image_G,Image_B)
+            image,Ratio_R,Ratio_G,Ratio_B = open_file(file)
+            Transformed = transform_images(image, Ratio_R,Ratio_G,Ratio_B)
             output_path = os.path.join(Transformed_2, file)
             cv2.imwrite(output_path, Transformed)
             print(f"processed {file}")
@@ -26,12 +31,21 @@ def open_file(file):
     Image_R = np.mean(R)
     Image_G =  np.mean(G)
     Image_B =  np.mean(B)
-    return image, Image_R, Image_G, Image_B
+    if Site == "Underwater":
+        Ratio_R = UFR / Image_R
+        Ratio_G = UFG / Image_G
+        Ratio_B = UFB / Image_B
+    else:
+        Ratio_R = LFR / Image_R
+        Ratio_G = LFG / Image_G
+        Ratio_B = LFB / Image_B
+    return image, Ratio_R, Ratio_G, Ratio_B
 
-def transform_images(image, Image_R,Image_G,Image_B):
-    image[:, :, 0] *= FR
-    image[:, :, 1] *= FG
-    image[:, :, 2] *= FB
-    return image
+def transform_images(image, Ratio_R, Ratio_G, Ratio_B):
+        image[:, :, 0] *= Ratio_R
+        image[:, :, 1] *= Ratio_G
+        image[:, :, 2] *= Ratio_B
+    
+        return image
 
 main(files)
