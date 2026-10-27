@@ -5,9 +5,9 @@ import cv2
 files = 
 Transformed_2 = r"C:\Users\jandr\OneDrive - Universidad del rosario\Physiology_Photrogrammetry\Underwater\Transformed"
 os.makedirs(Transformed_2, exist_ok=True)
-Rf = 1.34
-Bf =  1.34
-Gf = 1
+FR = 1.34
+FG = 1
+FB = 1.34
 
 def main(files):
     for file in os.listdir(files):
@@ -29,9 +29,9 @@ def open_file(file):
     return image, Image_R, Image_G, Image_B
 
 def transform_images(image, Image_R,Image_G,Image_B):
-    image[:, :, 0] *= Rf
-    image[:, :, 1] *= Rf
-    image[:, :, 2] *= Rf
+    image[:, :, 0] *= FR
+    image[:, :, 1] *= FG
+    image[:, :, 2] *= FB
     return image
 
 main(files)
