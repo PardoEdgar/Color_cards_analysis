@@ -4,8 +4,7 @@ library(DHARMa)
 library(readxl)
 
 #############################################################################################
-path <- "C:/Users/jandr/Downloads/Raw_underwater_vs_lab_pixels_data.csv"
-path <- "C:/Users/jandr/Downloads/Gray_world_whitebalanced_underwater_vs_air_Data_pixels.csv"
+path <-"Gray_world_whitebalanced_underwater_vs_air_Data_pixels.csv"
 
 data <- read_csv(path)
 data <- data |>
