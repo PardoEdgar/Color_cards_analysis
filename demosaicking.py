@@ -53,7 +53,7 @@ def copy_datetime_metadata_tiff(dng_path, tiff_path):
 
 def demosaicking_linear(file, output_dir_tiff):
     img_raw = rawpy.imread(str(file))
-    Max_saturation = img_raw.white_level - img_raw.black_level_per_channel[0]
+    Max_saturation = img_raw.white_level - max(img_raw.black_level_per_channel)
     img = img_raw.postprocess(
         output_bps=16,
         four_color_rgb=True, 
