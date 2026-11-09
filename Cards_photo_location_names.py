@@ -49,6 +49,7 @@ def pixel_extraction(Photos_names):
         path = path.parent.parent / Path("gamma") / f"{path.stem}.jpg"
         Grey_world_img = cv2.imread(str(path))
         arr = np.array(Grey_world_img)
+        Height, Width = arr.shape[:2]
         center_X = row["X_location_pixel"]
         center_Y = row["Y_location_pixel"]
         for _ in range(25):
@@ -58,17 +59,18 @@ def pixel_extraction(Photos_names):
             ny = round(center_Y) + dy
             # print(f"Image shape {arr.shape}")
             # print(f"nx range: {np.min(nx), np.max(nx)}, ny range: {np.min(ny), np.max(ny)}")
-            R, G, B = arr[ny, nx, 0], arr[ny, nx, 1], arr[ny, nx, 2]
-            New_pixels.append(
-                {
-                    **row.to_dict(),
-                    "X_ran_location_pixel": nx,
-                    "y_ran_location_pixel": ny,
-                    "R": float(R),
-                    "G": float(G),
-                    "B": float(B),
-                }
-            )
+            if  (0<= nx > Width and 0<= ny <Height):
+                R, G, B = arr[ny, nx, 0], arr[ny, nx, 1], arr[ny, nx, 2]
+                New_pixels.append(
+                    {
+                        **row.to_dict(),
+                        "X_ran_location_pixel": nx,
+                        "y_ran_location_pixel": ny,
+                        "R": float(R),
+                        "G": float(G),
+                        "B": float(B),
+                    }
+                )
 
     return pd.DataFrame(New_pixels)
 
