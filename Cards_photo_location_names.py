@@ -22,6 +22,7 @@ def extract_location():
                 position = np.array(transform.mulp(marker.position))
                 Cards_data.append(
                     {
+                        "Card_ID": marker.group.label,
                         "site_name": site_name,
                         "Transect": Transect,
                         "name": name,
@@ -46,6 +47,7 @@ def extract_images_name():
                 for cam, proj in marker.projections.items():
                     Photos_names.append(
                         {
+                            "Card_ID": marker.group.label,
                             "site_name": site_name,
                             "Transect": Transect,
                             "names": cam.label,
