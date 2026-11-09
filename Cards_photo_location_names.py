@@ -2,6 +2,7 @@ import Metashape
 import numpy as np
 import pandas as pd
 import os
+import re
 
 doc = Metashape.app.document
 chunks = doc.chunks
@@ -16,18 +17,19 @@ def extract_location():
         transform = chunk.transform.matrix
         markers = chunk.markers
         for marker in markers:
-            name = marker.label
-            position = np.array(transform.mulp(marker.position))
-            Cards_data.append(
-                {
-                    "site_name": site_name,
-                    "Transect": Transect,
-                    "name": name,
-                    "x_position": position[0],
-                    "y_position": position[1],
-                    "z_position": position[2],
-                }
-            )
+            if re.fullmatch(r"G\d", marker.label) is not None:
+                name = marker.label
+                position = np.array(transform.mulp(marker.position))
+                Cards_data.append(
+                    {
+                        "site_name": site_name,
+                        "Transect": Transect,
+                        "name": name,
+                        "x_position": position[0],
+                        "y_position": position[1],
+                        "z_position": position[2],
+                    }
+                )
     print(Cards_data)
     return Cards_data, site_name, Transect
 
@@ -39,17 +41,19 @@ def extract_images_name():
         site_name = split[0]
         Transect = split[4]
         markers = chunk.markers
-        Photos_names.append({"site_name": site_name, "Transect": Transect})
         for marker in markers:
-            for cam, proj in marker.projections.items():
-                Photos_names.append(
-                    {
-                        "names": cam.label,
-                        "marker": marker.label,
-                        "X_location_pixel": proj.coord.x,
-                        "y_location_pixel": proj.coord.y,
-                    }
-                )
+            if re.fullmatch(r"G\d", marker.label) is not None:
+                for cam, proj in marker.projections.items():
+                    Photos_names.append(
+                        {
+                            "site_name": site_name,
+                            "Transect": Transect,
+                            "names": cam.label,
+                            "marker": marker.label,
+                            "X_location_pixel": proj.coord.x,
+                            "y_location_pixel": proj.coord.y,
+                        }
+                    )
 
     print(Photos_names)
     return Photos_names
