@@ -1,3 +1,4 @@
+import cv2
 from numpy import shape
 import Metashape
 import numpy as np
@@ -46,7 +47,7 @@ def pixel_extraction(Photos_names):
     for _, row in Photos_names.iterrows():
         path = Path(row["cam_path"])
         path = path.parent.parent / Path("gamma") / f"{path.stem}.jpg"
-        Grey_world_img = tifffile.imread(str(path))
+        Grey_world_img = cv2.imread(str(path))
         arr = np.array(Grey_world_img)
         center_X = row["X_location_pixel"]
         center_Y = row["Y_location_pixel"]
@@ -55,8 +56,8 @@ def pixel_extraction(Photos_names):
             dy = np.random.randint(-25, 26)
             nx = round(center_X) + dx
             ny = round(center_Y) + dy
-            #print(f"Image shape {arr.shape}")
-            #print(f"nx range: {np.min(nx), np.max(nx)}, ny range: {np.min(ny), np.max(ny)}")
+            # print(f"Image shape {arr.shape}")
+            # print(f"nx range: {np.min(nx), np.max(nx)}, ny range: {np.min(ny), np.max(ny)}")
             R, G, B = arr[ny, nx, 0], arr[ny, nx, 1], arr[ny, nx, 2]
             New_pixels.append(
                 {
