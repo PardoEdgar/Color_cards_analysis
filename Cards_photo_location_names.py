@@ -62,6 +62,7 @@ def pixel_extraction(Photos_names):
             # print(f"Image shape {arr.shape}")
             # print(f"nx range: {np.min(nx), np.max(nx)}, ny range: {np.min(ny), np.max(ny)}")
             if (0 <= nx < Width and 0 <= ny < Height):
+                R, G, B = arr[ny, nx, 0], arr[ny, nx, 1], arr[ny, nx, 2]
                 New_pixels.append(
                     {
                         **row.to_dict(),
