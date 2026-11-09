@@ -40,6 +40,7 @@ def extract_images_name():
     for chunk in chunks:
         split = chunk.label.split("_")
         site_name = split[0]
+        Month = split[2]
         Transect = split[4]
         markers = chunk.markers
         for marker in markers:
@@ -47,6 +48,7 @@ def extract_images_name():
                 for cam, proj in marker.projections.items():
                     Photos_names.append(
                         {
+                            "Month": Month,
                             "Card_ID": marker.group.label,
                             "site_name": site_name,
                             "Transect": Transect,
