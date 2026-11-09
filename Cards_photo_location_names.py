@@ -46,14 +46,14 @@ def pixel_extraction(Photos_names):
     New_pixels = []
     for _, row in Photos_names.iterrows():
         path = Path(row["cam_path"])
-        path = path.parent.parent / Path("gamma") / f"{path.stem}.jpg"
-        Grey_world_img = cv2.imread(str(path))
+        path = path.parent.parent / Path("GW") / f"{path.stem}.TIFF"
+        Grey_world_img = tifffile.imread(str(path))
         arr = np.array(Grey_world_img)
         Height, Width = arr.shape[:2]
         center_X = row["X_location_pixel"]
         center_Y = row["Y_location_pixel"]
-        if not (0 <= center_X < Width and 0 <= center_Y <  Height):
-           continue
+        if not (0 <= center_X < Width and 0 <= center_Y < Height):
+            continue
         for _ in range(25):
             dx = np.random.randint(-25, 26)
             dy = np.random.randint(-25, 26)
@@ -61,7 +61,7 @@ def pixel_extraction(Photos_names):
             ny = round(center_Y) + dy
             # print(f"Image shape {arr.shape}")
             # print(f"nx range: {np.min(nx), np.max(nx)}, ny range: {np.min(ny), np.max(ny)}")
-            if (0 <= nx < Width and 0 <= ny < Height):
+            if 0 <= nx < Width and 0 <= ny < Height:
                 R, G, B = arr[ny, nx, 0], arr[ny, nx, 1], arr[ny, nx, 2]
                 New_pixels.append(
                     {
