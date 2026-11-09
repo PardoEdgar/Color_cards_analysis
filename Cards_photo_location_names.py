@@ -52,6 +52,8 @@ def pixel_extraction(Photos_names):
         Height, Width = arr.shape[:2]
         center_X = row["X_location_pixel"]
         center_Y = row["Y_location_pixel"]
+        if not (0 <= center_X < Width and 0 <= center_Y <  Height):
+           continue
         for _ in range(25):
             dx = np.random.randint(-25, 26)
             dy = np.random.randint(-25, 26)
@@ -59,8 +61,7 @@ def pixel_extraction(Photos_names):
             ny = round(center_Y) + dy
             # print(f"Image shape {arr.shape}")
             # print(f"nx range: {np.min(nx), np.max(nx)}, ny range: {np.min(ny), np.max(ny)}")
-            if (0 <= center_X < Width and 0 <= center_Y < Height):
-                R, G, B = arr[ny, nx, 0], arr[ny, nx, 1], arr[ny, nx, 2]
+            if (0 <= nx < Width and 0 <= ny < Height):
                 New_pixels.append(
                     {
                         **row.to_dict(),
