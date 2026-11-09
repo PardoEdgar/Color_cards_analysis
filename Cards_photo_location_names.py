@@ -1,3 +1,4 @@
+from numpy import shape
 import Metashape
 import numpy as np
 import pandas as pd
@@ -54,6 +55,10 @@ def pixel_extraction(Photos_names):
             dy = np.random.randint(-25, 26)
             nx = round(center_X) + dx
             ny = round(center_Y) + dy
+            print(f"Image shape {arr.shape}")
+            print(
+                f"nx range: {np.min(nx), np.max(nx)}, ny range: {np.min(ny), np.max(ny)}"
+            )
             R, G, B = arr[ny, nx, 0], arr[ny, nx, 1], arr[ny, nx, 2]
             New_pixels.append(
                 {
