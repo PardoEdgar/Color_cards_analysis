@@ -21,22 +21,21 @@ def extract_images_name():
         for marker in markers:
             if re.fullmatch(r"G\d", marker.label) is not None:
                 for cam, proj in marker.projections.items():
-                    if not cam.enabled:
-                        continue
-                    cam_path = Path(cam.photo.path)
-                    Photos_names.append(
-                        {
-                            "Month": Month,
-                            "Card_ID": marker.group.label,
-                            "site_name": site_name,
-                            "Transect": Transect,
-                            "names": cam.label,
-                            "marker": marker.label,
-                            "X_location_pixel": proj.coord.x,
-                            "Y_location_pixel": proj.coord.y,
-                            "cam_path": cam_path,
-                        }
-                    )
+                    if cam.enabled:
+                        cam_path = Path(cam.photo.path)
+                        Photos_names.append(
+                            {
+                                "Month": Month,
+                                "Card_ID": marker.group.label,
+                                "site_name": site_name,
+                                "Transect": Transect,
+                                "names": cam.label,
+                                "marker": marker.label,
+                                "X_location_pixel": proj.coord.x,
+                                "Y_location_pixel": proj.coord.y,
+                                "cam_path": cam_path,
+                            }
+                        )
 
     return pd.DataFrame(Photos_names), site_name, Transect
 
