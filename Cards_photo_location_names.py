@@ -21,6 +21,8 @@ def extract_images_name():
         for marker in markers:
             if re.fullmatch(r"G\d", marker.label) is not None:
                 for cam, proj in marker.projections.items():
+                    if not cam.enabled:
+                        continue
                     cam_path = Path(cam.photo.path)
                     Photos_names.append(
                         {
