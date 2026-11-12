@@ -476,6 +476,29 @@ plot(model_res)
 
 0.0289+0.0049+0.0064
 
+##########################################################
+#Verifying function data pixel extraction from color cards in orhomosaics using estracted marker positions as proxy of pixel position in linear images
+library(tidyverse)
+library(dplyr)
+library(gridExtra)
+data_test <- read_csv("C:/Users/jandr/Downloads/Data_pixels_test_pixel_selector.csv") |> dplyr::mutate(Source = "GUI")
+colnames(data_test)
+
+plot1 <- ggplot(data_test, aes(x= R, y= Grey_patch, color = Grey_patch)) + geom_boxplot() + geom_point() + coord_cartesian(xlim = c(0,0.3))+facet_grid(rows = vars(Filename))+ theme_classic() + labs(title= "Pixel extraction using verified GUI with manual selection in linear images")
+
+
+ggplot(data_test, aes(x= R, color = Grey_patch)) + geom_density() + facet_grid(cols = vars(Filename))+ theme_classic()
+
+data_orthos <- read_csv("C:/Users/jandr/Downloads/Photos_names_Portobelo_Lab.csv")|> dplyr::mutate(Source = "Orthomosaic")
+colnames(data_orthos)
+
+plot2 <-  ggplot(data_orthos, aes(x= R, y= marker, color = marker)) + geom_boxplot()+ geom_point() + facet_grid(rows = vars(names)) + coord_cartesian(xlim = c(0,0.3)) + theme_classic()   + labs(title= "Pixel extraction using markers positions from orthomosaics to linear images ")
+
+ggplot(data_orthos, aes(x= R, color = marker)) + geom_density() + facet_grid(rows = vars(names))+ theme_classic()
+
+grid.arrange(plot1, plot2) 
+
+
 
 0.0064/0.0402
 0.08*0.08
