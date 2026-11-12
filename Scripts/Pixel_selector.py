@@ -6,6 +6,7 @@ from PIL import Image, ImageTk
 from pathlib import Path
 import numpy as np
 import pandas as pd
+import tifffile
 
 PANEL = "#02236f"
 BG = "#000000"
@@ -130,7 +131,15 @@ class Pixel_selector:
         ttk.Combobox(
             btn_frame_1,
             textvariable=self.site,
-            values=["Lab", "Archaeology", "SetUp", "Parking", "Amador", "Aquarium","Underwater"],
+            values=[
+                "Lab",
+                "Archaeology",
+                "SetUp",
+                "Parking",
+                "Amador",
+                "Aquarium",
+                "Underwater",
+            ],
             state="readonly",
             width=12,
         ).pack(side="right")
@@ -185,8 +194,7 @@ class Pixel_selector:
 
         print(f"lineal_path: {lineal_path}")
         self.lineal_path = Path(lineal_path)
-        lineal_img = cv2.imread(str(lineal_path), cv2.IMREAD_UNCHANGED)
-        lineal_img = cv2.cvtColor(lineal_img, cv2.COLOR_BGR2RGB)
+        lineal_img = tifffile.imread(str(lineal_path))
         print(lineal_img.dtype)
         self.lineal_image = lineal_img
         self.arr = np.array(lineal_img)
