@@ -474,31 +474,121 @@ Model_R_more_complex <- glmmTMB(
 model_res <-  simulateResiduals(Model_R_more_complex,n=2000)
 plot(model_res)
 
-0.0289+0.0049+0.0064
 
 ##########################################################
 #Verifying function data pixel extraction from color cards in orhomosaics using estracted marker positions as proxy of pixel position in linear images
 library(tidyverse)
 library(dplyr)
 library(gridExtra)
+library(glmmTMB)
+library(DHARMa)
+library(emmeans)
+
 data_test <- read_csv("C:/Users/jandr/Downloads/Data_pixels_test_pixel_selector.csv") |> dplyr::mutate(Source = "GUI")
 colnames(data_test)
+data_test <- data_test |> dplyr::filter(!data_test$Grey_patch %in% c("G0","G5")) |> mutate(Grey_patch = factor(Grey_patch, levels = c("G1","G2","G3","G4"))) 
 
-plot1 <- ggplot(data_test, aes(x= R, y= Grey_patch, color = Grey_patch)) + geom_boxplot() + geom_point() + coord_cartesian(xlim = c(0,0.3))+facet_grid(rows = vars(Filename))+ theme_classic() + labs(title= "Pixel extraction using verified GUI with manual selection in linear images")
+plot1 <- ggplot(data_test, aes(x= Grey_patch, y= R, color = Grey_patch)) + geom_boxplot() +
+  geom_point() + coord_cartesian(ylim = c(0,0.2))+facet_grid(cols = vars(Filename))+ theme_classic() + 
+  labs(title= "Pixel extraction using verified GUI with manual selection in linear images", x = "Grey Patch", y = "R intensity (0,1)") +
+  theme(legend.position = "top")
+
 
 
 ggplot(data_test, aes(x= R, color = Grey_patch)) + geom_density() + facet_grid(cols = vars(Filename))+ theme_classic()
 
 data_orthos <- read_csv("C:/Users/jandr/Downloads/Photos_names_Portobelo_Lab.csv")|> dplyr::mutate(Source = "Orthomosaic")
 colnames(data_orthos)
+data_orthos <- data_orthos |> dplyr::filter(!data_orthos$marker %in% c("G0","G5")) |> mutate(Grey_patch = factor(marker, levels = c("G1","G2","G3","G4")))
 
-plot2 <-  ggplot(data_orthos, aes(x= R, y= marker, color = marker)) + geom_boxplot()+ geom_point() + facet_grid(rows = vars(names)) + coord_cartesian(xlim = c(0,0.3)) + theme_classic()   + labs(title= "Pixel extraction using markers positions from orthomosaics to linear images ")
+plot2 <-  ggplot(data_orthos, aes(x=marker , y= R, color = marker)) + geom_boxplot()+ geom_point() + facet_grid(cols = vars(names)) + coord_cartesian(ylim = c(0,0.2)) +
+  theme_classic()   + 
+  labs(title= "Pixel extraction using markers positions from orthomosaics to linear images", x = "Grey Patch", y = "R intensity (0,1)") +
+  theme(legend.position = "top")
 
 ggplot(data_orthos, aes(x= R, color = marker)) + geom_density() + facet_grid(rows = vars(names))+ theme_classic()
 
-grid.arrange(plot1, plot2) 
+grid.arrange(plot1, plot2, ncol=2) 
+
+#Data_test
+lm_GUI <- glmmTMB(log(R) ~ Grey_patch + (1|Filename/Grey_patch), data= data_test, family = gaussian())
+summary(lm_GUI)
+
+
+qqnorm(resid(lm_GUI))
+qqline(resid(lm_GUI))
+
+res <-simulateResiduals(lm_GUI, n=2000)
+plot(res)
+data_for_prediction <- data.frame(Grey_patch = factor(levels(data_test$Grey_patch), levels =  levels(data_test$Grey_patch)), names = data_test$Filename)
+Prediction_GUI <- predict(lm_GUI, newdata = data_for_prediction ,se.fit = TRUE, re.form = NA)
+Data_plot_GUI <-  data_for_prediction |> mutate(Mean = Prediction_GUI$fit, SE = Prediction_GUI$se.fit) |>  
+  mutate(Mean_log = exp(Mean), High_CI = exp(Mean + SE * 1.96), Low_CI = exp(Mean -SE* 1.96)) |> 
+  mutate(Type ="GUI")
+
+#Data_test
+lm_orthos <- glmmTMB(log(R) ~ Grey_patch + (1|names/Grey_patch), data= data_orthos, family = gaussian())
+summary(lm_orthos)
+
+
+qqnorm(resid(lm_orthos))
+qqline(resid(lm_orthos))
+
+res_orthos <-simulateResiduals(lm_orthos, n=2000)
+plot(res_orthos)
+
+data_for_prediction <- data.frame(
+  Grey_patch = factor(
+    levels(data_orthos$Grey_patch),
+    levels = levels(data_orthos$Grey_patch)
+  ),  names = data_orthos$names
+
+)
+Prediction_orthos <- predict(lm_orthos, newdata = data_for_prediction ,se.fit = TRUE, re.form = NA)
+
+Data_plot_orthos <- data_for_prediction |> mutate(Mean = Prediction_orthos$fit, SE = Prediction_orthos$se.fit) |>  
+  mutate(Mean_log = exp(Mean),High_CI = exp(Mean + SE * 1.96), Low_CI = exp(Mean - SE *1.96 )) |> mutate(Type = "Orthos")
+
+
+Data_plot <- bind_rows(Data_plot_GUI, Data_plot_orthos)
+
+ggplot() +
+  geom_point(data = Data_plot, aes(x= interaction(Type,Grey_patch,names), y= Mean_log, color = Type)) + 
+  geom_errorbar(data = Data_plot, aes(x= interaction(Type,Grey_patch,names), ymin = Low_CI, ymax = High_CI, color = Type), width = 0.5) + 
+  theme_classic() + theme(legend.position = "top") + labs(x= "Type, Grey Patch", y="R intensity (0-1)") 
 
 
 
-0.0064/0.0402
-0.08*0.08
+###############################################################################
+
+data_test <- read_csv("C:/Users/jandr/Downloads/Data_pixels_test_pixel_selector.csv") |> dplyr::mutate(Source = "GUI")
+colnames(data_test)
+data_test <- data_test |> dplyr::filter(!data_test$Grey_patch %in% c("G0","G5")) |> mutate(Grey_patch = factor(Grey_patch, levels = c("G1","G2","G3","G4"))) 
+
+data_orthos <- read_csv("C:/Users/jandr/Downloads/Photos_names_Portobelo_Lab.csv")|> dplyr::mutate(Source = "Orthomosaic")
+colnames(data_orthos)
+data_orthos <- data_orthos |> dplyr::filter(!data_orthos$marker %in% c("G0","G5")) |> mutate(Grey_patch = factor(marker, levels = c("G1","G2","G3","G4")))
+
+data <- bind_rows(
+  data_test   |> transmute(Source, image = Filename, Grey_patch, R),
+  data_orthos |> transmute(Source, image = names,    Grey_patch, R))
+
+
+ggplot(data, aes(x= R, y= Grey_patch, group = interaction(Grey_patch,Source), color = Source)) +
+  geom_boxplot(position = position_dodge(0.8), width = 0.7, size=1)+
+  geom_point(position = position_jitterdodge(dodge.width = 0.8), size= 0.2) + coord_cartesian(xlim = c(0,0.2)) + facet_wrap(~image, ncol=2)+ theme_classic() + 
+  labs(title= "Pixel extraction using verified GUI with manual selection in linear images", y = "Grey Patch", x= "R intensity") +
+  theme(legend.position = "top")
+
+model <- glmmTMB(log(R) ~ Source * Grey_patch + (1 | image/Grey_patch), data = data, family = gaussian())
+
+plot(simulateResiduals(model, n = 2000))
+
+emm <- emmeans(model, ~ Source | Grey_patch, type = "response")
+Comparison <-contrast(emm, "revpairwise", , adjust = "bonferroni") 
+summary(Comparison, infer = TRUE)
+
+ggplot(as.data.frame(emm), aes(x = Grey_patch, y= response, color = Source,
+                               ymin = asymp.LCL, ymax = asymp.UCL)) +
+  geom_pointrange(position = position_dodge(0.4)) + theme_classic()
+
