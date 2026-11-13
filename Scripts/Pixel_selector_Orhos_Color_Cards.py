@@ -9,6 +9,7 @@ import random
 import tkinter as tk
 import tifffile
 from pathlib import Path
+from datetime import datetime
 
 doc = Metashape.app.document
 chunks = doc.chunks
@@ -20,11 +21,25 @@ def extract_images_name():
         split = chunk.label.split("_")
         site_name, Month, Transect = split[0], split[2], split[4]
         markers = chunk.markers
+        camera_times = []
+        for camera in chunk.cameras:
+            camera_meta = camera.photo.imageMeta()
+            time_str = camera_meta["Exif/DateTimeOriginal"]
+            camera_time = datetime.strptime(time_str, "%Y:%m:%d %H:%M:%S")
+            if time_str:
+                camera_times.append(datetime.strptime(time_str, "%Y:%m:%d %H:%M:%S"))
+        first_photo_time = min(camera_times)
         for marker in markers:
             if re.fullmatch(r"G\d", marker.label) is not None:
                 for cam, proj in marker.projections.items():
                     if cam.enabled:
                         cam_path = Path(cam.photo.path)
+                        camera_meta = cam.photo.imageMeta()
+                        time_str = camera_meta["Exif/DateTimeOriginal"]
+                        camera_time = datetime.strptime(time_str, "%Y:%m:%d %H:%M:%S")
+                        Hour = camera_time.hour
+                        minutes_noncorrected = camera_time.minute
+                        minutes = (camera_time - first_photo_time).total_seconds() / 60
                         Photos_names.append(
                             {
                                 "Month": Month,
@@ -36,6 +51,10 @@ def extract_images_name():
                                 "X_location_pixel": proj.coord.x,
                                 "Y_location_pixel": proj.coord.y,
                                 "cam_path": cam_path,
+                                "camera_time": camera_time,
+                                "Hour": Hour,
+                                "Minutes_noncorrected": minutes_noncorrected,
+                                "minutes": minutes,
                             }
                         )
 
