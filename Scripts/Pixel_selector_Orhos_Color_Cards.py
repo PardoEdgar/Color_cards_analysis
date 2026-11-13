@@ -1,3 +1,4 @@
+from math import floor
 import cv2
 from numpy import shape
 import Metashape
@@ -76,8 +77,8 @@ def pixel_extraction(Photos_names):
         for _ in range(25):
             dx = np.random.randint(-25, 26)
             dy = np.random.randint(-25, 26)
-            nx = round(center_X) + dx
-            ny = round(center_Y) + dy
+            nx = int(floor(center_X) + dx)
+            ny = int(floor(center_Y) + dy)
             # print(f"Image shape {arr.shape}")
             # print(f"nx range: {np.min(nx), np.max(nx)}, ny range: {np.min(ny), np.max(ny)}")
             if 0 <= nx < Width and 0 <= ny < Height:
