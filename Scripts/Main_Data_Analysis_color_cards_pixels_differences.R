@@ -599,18 +599,17 @@ ggplot(emm, aes(x = Grey_patch, y= response, color = Source)) +
   geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL),position = position_dodge(0.9))+
   theme_classic()
 
-
-
 Comparison_data <- as.data.frame(
-  summary(Comparison, infer = TRUE))
+  summary(Comparison, infer = TRUE)
+)
 
-ggplot(
-  Comparison_data,
-  aes(x = Grey_patch, y = ratio, color = Grey_patch)) +
-  geom_hline( yintercept = 1, linetype = "dashed",color = "black") +
+ggplot(Comparison_data,aes(x = Grey_patch, y = ratio, color = Grey_patch)) +
+  geom_hline(yintercept = 1,linetype = "dashed",color = "black") +
   geom_point(size = 2) +
-  geom_errorbar(
-    aes(ymin = asymp.LCL, ymax = asymp.UCL),width = 0.15) +
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL),width = 0.15) +
   theme_classic() +
   labs(x = "Grey patch",y = "Orthomosaic / GUI")
+
+ggplot(data_test, aes(x=x, y=y, color= Filename)) + geom_point() + theme_classic()
+ggplot(data_orthos, aes(x=X_ran_location_pixel, y=y_ran_location_pixel, color= names)) + geom_point() + theme_classic()
 
