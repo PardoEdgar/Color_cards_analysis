@@ -574,21 +574,43 @@ data <- bind_rows(
   data_orthos |> transmute(Source, image = names,    Grey_patch, R))
 
 
-ggplot(data, aes(x= R, y= Grey_patch, group = interaction(Grey_patch,Source), color = Source)) +
-  geom_boxplot(position = position_dodge(0.8), width = 0.7, size=1)+
+ggplot(data, aes(x= R, y= Grey_patch, group = interaction(Grey_patch,Source), color = Grey_patch)) +
+  geom_boxplot(aes(linetype = Source),position = position_dodge(0.8), width = 0.7, size=0.7)+
   geom_point(position = position_jitterdodge(dodge.width = 0.8), size= 0.2) + coord_cartesian(xlim = c(0,0.2)) + facet_wrap(~image, ncol=2)+ theme_classic() + 
   labs(title= "Pixel extraction using verified GUI with manual selection in linear images", y = "Grey Patch", x= "R intensity") +
   theme(legend.position = "top")
 
-model <- glmmTMB(log(R) ~ Source * Grey_patch + (1 | image/Grey_patch), data = data, family = gaussian())
+model <- glmmTMB(log(R) ~ Source * Grey_patch + (1 | image/Grey_patch), dispformula = ~ Grey_patch * image, data = data, family = gaussian())
+summary(model)
 
 plot(simulateResiduals(model, n = 2000))
+testCategorical(model, data$Source)
+testCategorical(model, data$image)
+testCategorical(model, data$Grey_patch)
 
 emm <- emmeans(model, ~ Source | Grey_patch, type = "response")
 Comparison <-contrast(emm, "revpairwise", , adjust = "bonferroni") 
 summary(Comparison, infer = TRUE)
 
-ggplot(as.data.frame(emm), aes(x = Grey_patch, y= response, color = Source,
-                               ymin = asymp.LCL, ymax = asymp.UCL)) +
-  geom_pointrange(position = position_dodge(0.4)) + theme_classic()
+emm <- as.data.frame(emm)
+
+ggplot(emm, aes(x = Grey_patch, y= response, color = Source)) + 
+  geom_point(position = position_dodge(0.9)) +  
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL),position = position_dodge(0.9))+
+  theme_classic()
+
+
+
+Comparison_data <- as.data.frame(
+  summary(Comparison, infer = TRUE))
+
+ggplot(
+  Comparison_data,
+  aes(x = Grey_patch, y = ratio, color = Grey_patch)) +
+  geom_hline( yintercept = 1, linetype = "dashed",color = "black") +
+  geom_point(size = 2) +
+  geom_errorbar(
+    aes(ymin = asymp.LCL, ymax = asymp.UCL),width = 0.15) +
+  theme_classic() +
+  labs(x = "Grey patch",y = "Orthomosaic / GUI")
 
