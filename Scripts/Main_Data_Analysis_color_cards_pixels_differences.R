@@ -493,8 +493,6 @@ plot1 <- ggplot(data_test, aes(x= Grey_patch, y= R, color = Grey_patch)) + geom_
   labs(title= "Pixel extraction using verified GUI with manual selection in linear images", x = "Grey Patch", y = "R intensity (0,1)") +
   theme(legend.position = "top")
 
-
-
 ggplot(data_test, aes(x= R, color = Grey_patch)) + geom_density() + facet_grid(cols = vars(Filename))+ theme_classic()
 
 data_orthos <- read_csv("C:/Users/jandr/Downloads/Photos_names_Portobelo_Lab.csv")|> dplyr::mutate(Source = "Orthomosaic")
@@ -511,7 +509,7 @@ ggplot(data_orthos, aes(x= R, color = marker)) + geom_density() + facet_grid(row
 grid.arrange(plot1, plot2, ncol=2) 
 
 #Data_test
-lm_GUI <- glmmTMB(log(R) ~ Grey_patch + (1|Filename/Grey_patch), data= data_test, family = gaussian())
+lm_GUI <- glmmTMB(log(R) ~ Grey_patch + (1|Filename/Grey_patch),dispformula = ~ Grey_patch, data= data_test, family = gaussian())
 summary(lm_GUI)
 
 
@@ -520,6 +518,9 @@ qqline(resid(lm_GUI))
 
 res <-simulateResiduals(lm_GUI, n=2000)
 plot(res)
+testCategorical(res, data_test$Grey_patch)
+testCategorical(res, data_test$Filename)
+
 data_for_prediction <- data.frame(Grey_patch = factor(levels(data_test$Grey_patch), levels =  levels(data_test$Grey_patch)), names = data_test$Filename)
 Prediction_GUI <- predict(lm_GUI, newdata = data_for_prediction ,se.fit = TRUE, re.form = NA)
 Data_plot_GUI <-  data_for_prediction |> mutate(Mean = Prediction_GUI$fit, SE = Prediction_GUI$se.fit) |>  
@@ -527,15 +528,16 @@ Data_plot_GUI <-  data_for_prediction |> mutate(Mean = Prediction_GUI$fit, SE = 
   mutate(Type ="GUI")
 
 #Data_test
-lm_orthos <- glmmTMB(log(R) ~ Grey_patch + (1|names/Grey_patch), data= data_orthos, family = gaussian())
+lm_orthos <- glmmTMB(log(R) ~ Grey_patch + (1|names/Grey_patch), dispformula = ~Grey_patch * names,data= data_orthos, family = gaussian())
 summary(lm_orthos)
-
 
 qqnorm(resid(lm_orthos))
 qqline(resid(lm_orthos))
 
 res_orthos <-simulateResiduals(lm_orthos, n=2000)
 plot(res_orthos)
+testCategorical(res_orthos, data_orthos$Grey_patch)
+testCategorical(res_orthos, data_orthos$names)
 
 data_for_prediction <- data.frame(
   Grey_patch = factor(
@@ -580,35 +582,44 @@ ggplot(data, aes(x= R, y= Grey_patch, group = interaction(Grey_patch,Source), co
   labs(title= "Pixel extraction using verified GUI with manual selection in linear images", y = "Grey Patch", x= "R intensity") +
   theme(legend.position = "top")
 
-model <- glmmTMB(log(R) ~ Source * Grey_patch + (1 | image/Grey_patch), dispformula = ~ Grey_patch * image, data = data, family = gaussian())
+model_1 <- glmmTMB(log(R) ~ Source * Grey_patch + (1 | image/Grey_patch),dispformula = ~ Grey_patch + image, data = data, family = gaussian())
+model_2 <- glmmTMB(log(R) ~ Source * Grey_patch + (1 | image/Grey_patch),dispformula = ~ Grey_patch * image, data = data, family = gaussian())
 summary(model)
+res_model <- simulateResiduals(model, n = 2000)
+plot(res_model)
+testCategorical(res_model, data$Source)
+testCategorical(res_model, data$image)
+testCategorical(res_model, data$Grey_patch)
 
-plot(simulateResiduals(model, n = 2000))
-testCategorical(model, data$Source)
-testCategorical(model, data$image)
-testCategorical(model, data$Grey_patch)
+anova(model_1, model_2)
 
-emm <- emmeans(model, ~ Source | Grey_patch, type = "response")
+emm <- emmeans(model_2, ~ Source | Grey_patch, type = "response")
 Comparison <-contrast(emm, "revpairwise", , adjust = "bonferroni") 
 summary(Comparison, infer = TRUE)
 
 emm <- as.data.frame(emm)
 
-ggplot(emm, aes(x = Grey_patch, y= response, color = Source)) + 
-  geom_point(position = position_dodge(0.9)) +  
-  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL),position = position_dodge(0.9))+
+ggplot(emm, aes(x = Grey_patch, y= response, linetype  = Source)) + 
+  geom_point(position = position_dodge(1)) +  
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL),position = position_dodge(1))+
   theme_classic()
 
 Comparison_data <- as.data.frame(
   summary(Comparison, infer = TRUE)
 )
 
-ggplot(Comparison_data,aes(x = Grey_patch, y = ratio, color = Grey_patch)) +
-  geom_hline(yintercept = 1,linetype = "dashed",color = "black") +
+ggplot(Comparison_data,aes(x = Grey_patch, y = ratio)) +
+  geom_hline(yintercept = 1,linetype = "dashed",color = "black", size= 0.6) +
   geom_point(size = 2) +
   geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL),width = 0.15) +
   theme_classic() +
   labs(x = "Grey patch",y = "Orthomosaic / GUI")
+
+ggplot(data_test, aes(x=x, y=y, color= Filename)) + geom_point(size= 0.6) + theme_classic()
+
+ggplot(data_orthos, aes(x=X_ran_location_pixel, y=y_ran_location_pixel, color= names)) +
+  geom_point(size= 0.6) + theme_classic()
+
 
 ggplot(data_test, aes(x=x, y=y, color= Filename)) + geom_point() + theme_classic()
 ggplot(data_orthos, aes(x=X_ran_location_pixel, y=y_ran_location_pixel, color= names)) + geom_point() + theme_classic()
