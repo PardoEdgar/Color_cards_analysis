@@ -66,7 +66,7 @@ def pixel_extraction(Photos_names):
     New_pixels = []
     for _, row in Photos_names.iterrows():
         path = Path(row["cam_path"])
-        path = path.parent.parent / Path("GW") / f"{path.stem}.TIFF"
+        path = path.parent.parent / Path("TIFF") / f"{path.stem}.tif"
         Grey_world_img = tifffile.imread(str(path))
         arr = np.array(Grey_world_img)
         Height, Width = arr.shape[:2]
