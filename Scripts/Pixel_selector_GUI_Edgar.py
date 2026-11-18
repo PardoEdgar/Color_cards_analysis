@@ -255,9 +255,9 @@ class Pixel_selector:
         Real_x = int(relative_x_position / self.display_scale)
         Real_y = int(relative_y_position / self.display_scale)
 
-        for _ in range(25):
-            dx = np.random.randint(-25, 25)
-            dy = np.random.randint(-25, 25)
+        for _ in range(30):
+            dx = np.random.randint(-25, 26)
+            dy = np.random.randint(-25, 26)
             nx = Real_x + dx
             ny = Real_y + dy
             self.coords.append((nx, ny))
