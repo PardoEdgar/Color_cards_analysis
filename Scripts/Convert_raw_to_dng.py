@@ -7,7 +7,7 @@ from tkinter import filedialog
 
 # Path for DNG converter app
 DNG_CONVERTER_PATH = (
-    r"C:\Program Files\Adobe\Adobe DNG Converter\Adobe DNG Converter.exe"
+    r"F:\segmentationDataset\paralelizar_bayer\Adobe\Adobe DNG Converter\Adobe DNG Converter.exe"
 )
 
 
@@ -46,7 +46,7 @@ def convert_cr2_to_dng(input_path: Path, output_dir: Path) -> tuple[str, str]:
     except subprocess.TimeoutExpired:
         return "ERROR", f"{input_path.name}: Timeout"
     except Exception as e:
-        return "ERROR", f"{input_path.name}: {e}"
+        return "ERROR, Please change the directory path to a correct Adobe DNG converter app location", f"{input_path.name}: {e}"
 
 
 def convert_folder_cr2_to_dng(
