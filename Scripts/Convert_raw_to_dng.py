@@ -93,4 +93,3 @@ if __name__ == "__main__":
     convert_folder_cr2_to_dng(
         input_dir=cr2_dir, output_dir=dng_dir, max_workers=os.cpu_count() - 1
     )
-    copy_metadata_single(cr2_files, dng_dir)
