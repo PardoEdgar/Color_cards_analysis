@@ -9,8 +9,18 @@ from tkinter import filedialog
 DNG_CONVERTER_PATH = (
     r"F:\segmentationDataset\paralelizar_bayer\Adobe\Adobe DNG Converter\Adobe DNG Converter.exe"
 )
-
-
+EXIFTOOL_PATH = (
+     r"F:\segmentationDataset\paralelizar_bayer\Adobe\Adobe DNG Converter\Adobe DNG Converter.exe"
+)
+def copy_metadata(dng_path: Path, output_path: Path):
+    cmd = [
+        EXIFTOOL_PATH,
+        "-overwrite_original",
+        "-TagsFromFile", str(dng_path),
+        "-all:all",
+        str(output_path)
+    ]
+    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 def select_input_dir():
     root = tk.Tk()
     root.withdraw()
@@ -25,7 +35,6 @@ def select_input_dir():
 
 def convert_cr2_to_dng(input_path: Path, output_dir: Path) -> tuple[str, str]:
     try:
-        # Use the terminal for conversion
         cmd = [
             DNG_CONVERTER_PATH,
             "-p1",  # Preview
@@ -42,7 +51,8 @@ def convert_cr2_to_dng(input_path: Path, output_dir: Path) -> tuple[str, str]:
             return "ERROR", f"{input_path.name}: {result.stderr.decode().strip()}"
 
         return "OK", input_path.name
-
+        dng_path = output_dir / f"{input_path.stem}.dng"
+        copy_metadata(input_path,dng_path)
     except subprocess.TimeoutExpired:
         return "ERROR", f"{input_path.name}: Timeout"
     except Exception as e:
@@ -83,3 +93,4 @@ if __name__ == "__main__":
     convert_folder_cr2_to_dng(
         input_dir=cr2_dir, output_dir=dng_dir, max_workers=os.cpu_count() - 1
     )
+    copy_metadata_single(cr2_files, dng_dir)
