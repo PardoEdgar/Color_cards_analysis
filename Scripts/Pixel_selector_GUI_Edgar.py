@@ -188,8 +188,8 @@ class Pixel_selector:
     def load_image_lineal_TIFF(self):
         lineal_path = (
             self.image_path.parent.parent
-            / Path("linear")
-            / Path(self.image_path.stem + ".TIFF")
+            / Path("TIFF")
+            / Path(self.image_path.stem + ".TIF")
         )
 
         print(f"lineal_path: {lineal_path}")
@@ -255,9 +255,9 @@ class Pixel_selector:
         Real_x = int(relative_x_position / self.display_scale)
         Real_y = int(relative_y_position / self.display_scale)
 
-        for _ in range(30):
-            dx = np.random.randint(-25, 26)
-            dy = np.random.randint(-25, 26)
+        for _ in range(25):
+            dx = np.random.randint(-20, 20)
+            dy = np.random.randint(-20, 20)
             nx = Real_x + dx
             ny = Real_y + dy
             self.coords.append((nx, ny))
@@ -276,8 +276,9 @@ class Pixel_selector:
         self.click_count = 0
         self.id = 1
 
-    def extract_data(self, output_path=r"C:\Users\jandr\Downloads"):
+    def extract_data(self, output_path="NA"):
         records = []
+        output_path =  self.lineal_path.parent.parent
         for x, y in self.coords:
             r = self.arr[y, x, 0]
             g = self.arr[y, x, 1]
