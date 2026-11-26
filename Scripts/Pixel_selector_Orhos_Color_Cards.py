@@ -75,8 +75,8 @@ def pixel_extraction(Photos_names):
         if not (0 <= center_X < Width and 0 <= center_Y < Height):
             continue
         for _ in range(20):
-            dx = np.random.randint(-20, -20)
-            dy = np.random.randint(-20, -20)
+            dx = np.random.randint(-20, 20)
+            dy = np.random.randint(-20, 20)
             nx = int(floor(center_X) + dx)
             ny = int(floor(center_Y) + dy)
             # print(f"Image shape {arr.shape}")
