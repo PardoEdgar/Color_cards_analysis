@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 # Path for DNG converter app
 DNG_CONVERTER_PATH = (
-    r"C:\Program Files\Adobe\Adobe DNG Converter\Adobe DNG Converter.exe"
+    r"F:\segmentationDataset\paralelizar_bayer\Adobe\Adobe DNG Converter\Adobe DNG Converter.exe"
 )
 INITIAL_DIR1 = "E:/Photos/RRR_project"
 INITIAL_DIR2 = "E:/"
@@ -203,8 +203,8 @@ if __name__ == "__main__":
     )
 
     for section in SECTION_NAMES:
-        input_dir = main_dir / Path(main_dir.name + "_" + section) / "CR2"
-        main_output_dir = main_dir / Path(main_dir.name + "_" + section) / "DNG"
+        input_dir = main_dir / "CR2"
+        main_output_dir = main_dir / "DNG"
         if not input_dir.exists():
             raise NamingConventionError(
                 f"Directory {input_dir} should exist. Naming convention violated."
@@ -224,19 +224,6 @@ if __name__ == "__main__":
 
         output_dir = main_output_dir
         output_dir.mkdir(parents=True, exist_ok=True)
-
-        # Copying text file with faraway photo name.
-        text_path = (
-            main_dir / Path(main_dir.name + "_" + section) / Path("faraway_image.txt")
-        )
-        text_target_path = output_dir.parent / Path("faraway_image.txt")
-
-        if not text_path.exists():
-            raise MissingFarawayName(
-                "The faraway name text file is missing. Make sure to generate the metadata for the original photo set first."
-            )
-
-        text_path.copy(text_target_path, preserve_metadata=True)
 
         # Main function calls.
         convert_directory_CR2_to_DNG(input_dir, output_dir)
